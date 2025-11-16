@@ -1,0 +1,18 @@
+{
+  "name": "@neuronline/wasm",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "WASM-accelerated tensor operations for NeuronLine",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build:wasm": "asc assembly/index.ts --outFile build/neuronline.wasm --optimize --runtime stub",
+    "build": "bun build src/index.ts --outdir dist --target node --format esm"
+  },
+  "dependencies": {
+    "@neuronline/tensor": "workspace:*"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.27.0",
+    "typescript": "^5.7.3"
+  }
+}

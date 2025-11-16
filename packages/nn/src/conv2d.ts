@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { heNormal, uniform, zeros, matmul, add, transpose } from '@neuronline/tensor'
+import { heNormal, uniform, zeros, matmul, add } from '@neuronline/tensor'
 
 /**
  * Conv2D layer state
@@ -49,19 +49,62 @@ export function init(
 }
 
 /**
- * Forward pass through Conv2D
+ * Forward pass through Conv2D using im2col
  *
- * Input shape: [batch, channels, height, width]
- * Output shape: [batch, outChannels, outHeight, outWidth]
- *
- * Note: This is a simplified implementation for demonstration
- * Full implementation would use im2col or direct convolution
+ * Input: Flattened 4D tensor [batch * channels * height * width]
+ * Expected logical shape: [batch, channels, height, width]
+ * Output: Flattened 4D tensor [batch * outChannels * outHeight * outWidth]
  */
-export function forward(input: Tensor, state: Conv2DState): Tensor {
-  // TODO: Implement full 2D convolution
-  // For now, this is a placeholder that returns the input
-  // Full implementation requires im2col transformation
-  throw new Error('Conv2D forward not yet fully implemented - coming soon')
+export function forward(
+  input: Tensor,
+  state: Conv2DState,
+  inputShape: [number, number, number, number] // [batch, channels, height, width]
+): Tensor {
+  const [batch, inChannels, inH, inW] = inputShape
+  const { weight, bias, stride, padding } = state
+
+  // Extract kernel dimensions from weight shape
+  // Weight shape: [outChannels, inChannels * kH * kW]
+  const outChannels = weight.shape[0]!
+  const kernelSize = Math.sqrt(weight.shape[1]! / inChannels)
+  const kH = kernelSize
+  const kW = kernelSize
+
+  if (!Number.isInteger(kernelSize)) {
+    throw new Error('Invalid weight shape for square kernel')
+  }
+
+  // Calculate output dimensions
+  const outH = Math.floor((inH + 2 * padding - kH) / stride + 1)
+  const outW = Math.floor((inW + 2 * padding - kW) / stride + 1)
+
+  // Apply padding if needed
+  const paddedInput = padding > 0
+    ? padInput(input, inputShape, padding)
+    : input
+
+  const paddedH = inH + 2 * padding
+  const paddedW = inW + 2 * padding
+
+  // im2col transformation
+  const colMatrix = im2col(
+    paddedInput,
+    [batch, inChannels, paddedH, paddedW],
+    kH,
+    kW,
+    stride
+  )
+
+  // colMatrix shape: [inChannels * kH * kW, batch * outH * outW]
+  // weight shape: [outChannels, inChannels * kH * kW]
+  // Result: [outChannels, batch * outH * outW]
+  const convResult = matmul(weight, colMatrix)
+
+  // Add bias: broadcast bias across spatial dimensions
+  const output = addBias(convResult, bias, batch, outH, outW)
+
+  // Return with flattened data, caller can reshape as needed
+  return output
 }
 
 /**
@@ -78,4 +121,126 @@ export function getOutputShape(
   const width = Math.floor((inputW + 2 * padding - kernelSize) / stride + 1)
 
   return { height, width }
+}
+
+/**
+ * im2col transformation - converts image to column matrix
+ * Extracts all patches for convolution
+ *
+ * Input: [batch, channels, height, width] (flattened)
+ * Output: [channels * kH * kW, batch * outH * outW] (as 2D tensor)
+ */
+function im2col(
+  input: Tensor,
+  inputShape: [number, number, number, number],
+  kH: number,
+  kW: number,
+  stride: number
+): Tensor {
+  const [batch, channels, height, width] = inputShape
+  const outH = Math.floor((height - kH) / stride + 1)
+  const outW = Math.floor((width - kW) / stride + 1)
+
+  const colHeight = channels * kH * kW
+  const colWidth = batch * outH * outW
+
+  const colData = new Float32Array(colHeight * colWidth)
+
+  // For each output position
+  let colIdx = 0
+  for (let b = 0; b < batch; b++) {
+    for (let outY = 0; outY < outH; outY++) {
+      for (let outX = 0; outX < outW; outX++) {
+        const startY = outY * stride
+        const startX = outX * stride
+
+        // Extract patch
+        let rowIdx = 0
+        for (let c = 0; c < channels; c++) {
+          for (let ky = 0; ky < kH; ky++) {
+            for (let kx = 0; kx < kW; kx++) {
+              const y = startY + ky
+              const x = startX + kx
+              const inputIdx = ((b * channels + c) * height + y) * width + x
+              colData[rowIdx * colWidth + colIdx] = input.data[inputIdx]!
+              rowIdx++
+            }
+          }
+        }
+        colIdx++
+      }
+    }
+  }
+
+  return {
+    data: colData,
+    shape: [colHeight, colWidth],
+    requiresGrad: input.requiresGrad,
+  }
+}
+
+/**
+ * Add padding to input tensor
+ */
+function padInput(
+  input: Tensor,
+  inputShape: [number, number, number, number],
+  padding: number
+): Tensor {
+  const [batch, channels, height, width] = inputShape
+  const paddedH = height + 2 * padding
+  const paddedW = width + 2 * padding
+
+  const paddedData = new Float32Array(batch * channels * paddedH * paddedW)
+
+  for (let b = 0; b < batch; b++) {
+    for (let c = 0; c < channels; c++) {
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const inputIdx = ((b * channels + c) * height + y) * width + x
+          const paddedY = y + padding
+          const paddedX = x + padding
+          const paddedIdx = ((b * channels + c) * paddedH + paddedY) * paddedW + paddedX
+          paddedData[paddedIdx] = input.data[inputIdx]!
+        }
+      }
+    }
+  }
+
+  return {
+    data: paddedData,
+    shape: input.shape, // Keep original shape reference
+    requiresGrad: input.requiresGrad,
+  }
+}
+
+/**
+ * Add bias to convolution result
+ * convResult: [outChannels, batch * outH * outW]
+ * bias: [outChannels]
+ */
+function addBias(
+  convResult: Tensor,
+  bias: Tensor,
+  batch: number,
+  outH: number,
+  outW: number
+): Tensor {
+  const outChannels = convResult.shape[0]!
+  const spatialSize = batch * outH * outW
+
+  const output = new Float32Array(outChannels * spatialSize)
+
+  for (let c = 0; c < outChannels; c++) {
+    const biasVal = bias.data[c]!
+    for (let i = 0; i < spatialSize; i++) {
+      output[c * spatialSize + i] = convResult.data[c * spatialSize + i]! + biasVal
+    }
+  }
+
+  return {
+    data: output,
+    shape: [outChannels, spatialSize],
+    requiresGrad: convResult.requiresGrad,
+  }
 }

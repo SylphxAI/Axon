@@ -18,6 +18,10 @@ export * as dropout from './dropout'
 export type { BatchNormState } from './batchnorm'
 export * as batchnorm from './batchnorm'
 
+// LSTM
+export type { LSTMState, LSTMHidden } from './lstm'
+export * as lstm from './lstm'
+
 // Serialization
 export type {
   SerializedModel,
