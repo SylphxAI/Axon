@@ -1,0 +1,44 @@
+{
+  "name": "@sylphx/neuronline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Modern online learning neural network library for real-time user behavior prediction",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev": "bun run --filter='./packages/*' dev",
+    "build": "bun run --filter='./packages/*' build",
+    "test": "bun test",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check": "biome check --write .",
+    "typecheck": "bun run --filter='./packages/*' typecheck",
+    "clean": "rm -rf packages/*/dist apps/*/dist node_modules/.cache",
+    "verify-docs": "bun run scripts/verify-docs.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
+  },
+  "keywords": [
+    "machine-learning",
+    "online-learning",
+    "neural-network",
+    "incremental-learning",
+    "user-behavior",
+    "prediction",
+    "personalization",
+    "privacy-first"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SylphxAI/neuronline.git"
+  },
+  "license": "MIT",
+  "author": "SylphxAI"
+}

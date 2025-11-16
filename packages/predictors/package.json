@@ -1,0 +1,41 @@
+{
+  "name": "@sylphx/neuronline-predictors",
+  "version": "0.1.0",
+  "description": "Prediction modules for NeuronLine",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./click": {
+      "import": "./dist/click.js",
+      "types": "./dist/click.d.ts"
+    },
+    "./sequence": {
+      "import": "./dist/sequence.js",
+      "types": "./dist/sequence.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "bunx tsc",
+    "dev": "bunx tsc --watch",
+    "typecheck": "bunx tsc --noEmit",
+    "test": "bun test"
+  },
+  "keywords": ["prediction", "click-prediction", "behavior-prediction"],
+  "author": "SylphxAI",
+  "license": "MIT",
+  "dependencies": {
+    "@sylphx/neuronline-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.7.2"
+  },
+  "sideEffects": false
+}

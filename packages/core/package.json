@@ -1,0 +1,30 @@
+{
+  "name": "@sylphx/neuronline-core",
+  "version": "0.1.0",
+  "description": "Core online learning engine for NeuronLine",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "bunx tsc",
+    "dev": "bunx tsc --watch",
+    "typecheck": "bunx tsc --noEmit",
+    "test": "bun test"
+  },
+  "keywords": ["online-learning", "machine-learning", "neural-network", "incremental-learning"],
+  "author": "SylphxAI",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.7.2"
+  },
+  "sideEffects": false
+}
