@@ -18,6 +18,14 @@
     "./sequence": {
       "import": "./dist/sequence.js",
       "types": "./dist/sequence.d.ts"
+    },
+    "./recommender": {
+      "import": "./dist/recommender.js",
+      "types": "./dist/recommender.d.ts"
+    },
+    "./ab-test": {
+      "import": "./dist/ab-test.js",
+      "types": "./dist/ab-test.d.ts"
     }
   },
   "files": ["dist"],

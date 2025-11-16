@@ -6,3 +6,6 @@ export type { SequencePredictorConfig } from './sequence'
 
 export { clickToVector, normalizeFeatures, sequenceToVector } from './feature-extractor'
 export type { ClickContext, SequenceContext } from './feature-extractor'
+
+export * from './recommender'
+export * from './ab-test'

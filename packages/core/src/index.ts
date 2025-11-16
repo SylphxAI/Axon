@@ -6,5 +6,7 @@ export { SGDModel } from './sgd'
 
 export { PrioritizedReplayBuffer, UniformReplayBuffer } from './replay-buffer'
 
+export * from './bandit'
+export * from './functional-learner'
 export * from './math'
 export * from './types'
