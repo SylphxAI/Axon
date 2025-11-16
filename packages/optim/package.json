@@ -1,0 +1,19 @@
+{
+  "name": "@neuronline/optim",
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Pure functional optimizers for NeuronLine",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node --format esm && bun run build:types",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@neuronline/tensor": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

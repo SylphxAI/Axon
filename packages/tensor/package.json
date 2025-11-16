@@ -1,0 +1,28 @@
+{
+  "name": "@neuronline/tensor",
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Pure functional tensor operations for NeuronLine",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node --format esm && bun run build:types",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
+    "test": "bun test"
+  },
+  "keywords": [
+    "tensor",
+    "machine-learning",
+    "neural-network",
+    "autograd",
+    "pure-functional"
+  ],
+  "author": "SylphxAI",
+  "license": "MIT"
+}

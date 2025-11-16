@@ -30,6 +30,31 @@
         "typescript": "^5.7.2",
       },
     },
+    "packages/functional": {
+      "name": "@neuronline/functional",
+      "version": "3.0.0",
+      "dependencies": {
+        "@neuronline/tensor": "workspace:*",
+      },
+    },
+    "packages/nn": {
+      "name": "@neuronline/nn",
+      "version": "3.0.0",
+      "dependencies": {
+        "@neuronline/functional": "workspace:*",
+        "@neuronline/tensor": "workspace:*",
+      },
+    },
+    "packages/optim": {
+      "name": "@neuronline/optim",
+      "version": "3.0.0",
+      "dependencies": {
+        "@neuronline/tensor": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.7.3",
+      },
+    },
     "packages/predictors": {
       "name": "@sylphx/neuronline-predictors",
       "version": "0.1.0",
@@ -40,6 +65,10 @@
         "@types/bun": "latest",
         "typescript": "^5.7.2",
       },
+    },
+    "packages/tensor": {
+      "name": "@neuronline/tensor",
+      "version": "3.0.0",
     },
   },
   "packages": {
@@ -60,6 +89,14 @@
     "@biomejs/cli-win32-arm64": ["@biomejs/cli-win32-arm64@1.9.4", "", { "os": "win32", "cpu": "arm64" }, "sha512-tlbhLk+WXZmgwoIKwHIHEBZUwxml7bRJgk0X2sPyNR3S93cdRq6XulAZRQJ17FYGGzWne0fgrXBKpl7l4M87Hg=="],
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@1.9.4", "", { "os": "win32", "cpu": "x64" }, "sha512-8Y5wMhVIPaWe6jw2H+KlEm4wP/f7EW3810ZLmDlrEEy5KvBsb9ECEfu/kMWD484ijfQ8+nIi0giMgu9g1UAuuA=="],
+
+    "@neuronline/functional": ["@neuronline/functional@workspace:packages/functional"],
+
+    "@neuronline/nn": ["@neuronline/nn@workspace:packages/nn"],
+
+    "@neuronline/optim": ["@neuronline/optim@workspace:packages/optim"],
+
+    "@neuronline/tensor": ["@neuronline/tensor@workspace:packages/tensor"],
 
     "@sylphx/neuronline-core": ["@sylphx/neuronline-core@workspace:packages/core"],
 
