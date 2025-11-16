@@ -5,7 +5,8 @@
   "description": "2048 game for RL benchmarking",
   "scripts": {
     "play": "bun run src/play.ts",
-    "train": "bun run src/train.ts"
+    "train": "bun run src/train.ts",
+    "benchmark": "bun run src/benchmark.ts"
   },
   "dependencies": {
     "@neuronline/tensor": "workspace:*",
