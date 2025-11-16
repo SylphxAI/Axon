@@ -1,6 +1,6 @@
 # Performance Tracking
 
-## Baseline (v3.0.0 - Pure Functional)
+## Baseline (v0.1.0 - Pure Functional)
 
 **Date:** 2024-01-16
 **Benchmark:** 100 episodes of 2048 DQN training
@@ -57,10 +57,21 @@
 
 ## Optimization Log
 
-### [Baseline] v3.0.0 - Pure Functional
+### [Baseline] v0.1.0 - Pure Functional
 **Date:** 2024-01-16
 **Episodes/sec:** 3.35
 **Changes:** Initial pure functional implementation
+
+### v0.1.1 - Optimized Tensor Ops
+**Date:** 2024-01-16
+**Episodes/sec:** 4.11 (+22.7%)
+**Steps/sec:** 505 (+29.5%)
+**Training/step:** 241.92ms (-18.5%)
+**Changes:**
+- Loop unrolling (4x) in add/mul operations
+- Local variable caching in matmul
+- Pre-calculated indices in hot paths
+- Reduced array access overhead
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "@neuronline/tensor",
-  "version": "3.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Pure functional tensor operations for NeuronLine",
   "main": "./dist/index.js",

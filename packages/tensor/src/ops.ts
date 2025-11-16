@@ -20,8 +20,22 @@ export function add(a: Tensor, b: Tensor): Tensor {
   // Case 1: Same shape - simple element-wise
   if (a.shape.length === b.shape.length && a.data.length === b.data.length) {
     const data = new Float32Array(a.data.length)
-    for (let i = 0; i < data.length; i++) {
-      data[i] = a.data[i]! + b.data[i]!
+    const aData = a.data
+    const bData = b.data
+    const len = data.length
+
+    // Unroll loop by 4 for better performance
+    const len4 = len - (len % 4)
+    let i = 0
+    for (; i < len4; i += 4) {
+      data[i] = aData[i]! + bData[i]!
+      data[i + 1] = aData[i + 1]! + bData[i + 1]!
+      data[i + 2] = aData[i + 2]! + bData[i + 2]!
+      data[i + 3] = aData[i + 3]! + bData[i + 3]!
+    }
+    // Handle remainder
+    for (; i < len; i++) {
+      data[i] = aData[i]! + bData[i]!
     }
 
     const gradFn: GradFn | undefined = requiresGrad
@@ -197,20 +211,57 @@ export function mul(a: Tensor, b: Tensor): Tensor {
   const requiresGrad = a.requiresGrad || b.requiresGrad
   const data = new Float32Array(Math.max(a.data.length, b.data.length))
 
-  // Broadcasting support
+  // Broadcasting support - optimized
   if (a.shape.length === b.shape.length && a.data.length === b.data.length) {
-    for (let i = 0; i < data.length; i++) {
-      data[i] = a.data[i]! * b.data[i]!
+    const aData = a.data
+    const bData = b.data
+    const len = data.length
+
+    // Unroll by 4
+    const len4 = len - (len % 4)
+    let i = 0
+    for (; i < len4; i += 4) {
+      data[i] = aData[i]! * bData[i]!
+      data[i + 1] = aData[i + 1]! * bData[i + 1]!
+      data[i + 2] = aData[i + 2]! * bData[i + 2]!
+      data[i + 3] = aData[i + 3]! * bData[i + 3]!
+    }
+    for (; i < len; i++) {
+      data[i] = aData[i]! * bData[i]!
     }
   } else if (b.shape[0] === 1) {
     const bValue = b.data[0]!
-    for (let i = 0; i < a.data.length; i++) {
-      data[i] = a.data[i]! * bValue
+    const aData = a.data
+    const len = a.data.length
+
+    // Unroll by 4
+    const len4 = len - (len % 4)
+    let i = 0
+    for (; i < len4; i += 4) {
+      data[i] = aData[i]! * bValue
+      data[i + 1] = aData[i + 1]! * bValue
+      data[i + 2] = aData[i + 2]! * bValue
+      data[i + 3] = aData[i + 3]! * bValue
+    }
+    for (; i < len; i++) {
+      data[i] = aData[i]! * bValue
     }
   } else if (a.shape[0] === 1) {
     const aValue = a.data[0]!
-    for (let i = 0; i < b.data.length; i++) {
-      data[i] = aValue * b.data[i]!
+    const bData = b.data
+    const len = b.data.length
+
+    // Unroll by 4
+    const len4 = len - (len % 4)
+    let i = 0
+    for (; i < len4; i += 4) {
+      data[i] = aValue * bData[i]!
+      data[i + 1] = aValue * bData[i + 1]!
+      data[i + 2] = aValue * bData[i + 2]!
+      data[i + 3] = aValue * bData[i + 3]!
+    }
+    for (; i < len; i++) {
+      data[i] = aValue * bData[i]!
     }
   }
 
@@ -252,14 +303,30 @@ export function matmul(a: Tensor, b: Tensor): Tensor {
   const requiresGrad = a.requiresGrad || b.requiresGrad
   const data = new Float32Array(aRows! * bCols!)
 
-  // Matrix multiplication
-  for (let i = 0; i < aRows!; i++) {
-    for (let j = 0; j < bCols!; j++) {
+  // Optimized matrix multiplication
+  // Cache dimensions for faster access
+  const rows = aRows!
+  const cols = bCols!
+  const inner = aCols!
+  const aData = a.data
+  const bData = b.data
+
+  // Use local variables and pre-calculated indices for better JIT optimization
+  for (let i = 0; i < rows; i++) {
+    const aRowOffset = i * inner
+    const outRowOffset = i * cols
+
+    for (let j = 0; j < cols; j++) {
       let sum = 0
-      for (let k = 0; k < aCols!; k++) {
-        sum += a.data[i * aCols! + k]! * b.data[k * bCols! + j]!
+      // Unroll first iteration to avoid branch in loop
+      if (inner > 0) {
+        sum = aData[aRowOffset]! * bData[j]!
+
+        for (let k = 1; k < inner; k++) {
+          sum += aData[aRowOffset + k]! * bData[k * cols + j]!
+        }
       }
-      data[i * bCols! + j] = sum
+      data[outRowOffset + j] = sum
     }
   }
 
