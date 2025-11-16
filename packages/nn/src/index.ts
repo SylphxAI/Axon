@@ -14,6 +14,10 @@ export type { Conv2DState } from './conv2d'
 export type { DropoutConfig } from './dropout'
 export * as dropout from './dropout'
 
+// BatchNorm
+export type { BatchNormState } from './batchnorm'
+export * as batchnorm from './batchnorm'
+
 // Serialization
 export type {
   SerializedModel,
