@@ -1,0 +1,16 @@
+{
+  "name": "game-2048",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "2048 game for RL benchmarking",
+  "scripts": {
+    "play": "bun run src/play.ts",
+    "train": "bun run src/train.ts"
+  },
+  "dependencies": {
+    "@neuronline/tensor": "workspace:*",
+    "@neuronline/functional": "workspace:*",
+    "@neuronline/nn": "workspace:*",
+    "@neuronline/optim": "workspace:*"
+  }
+}
