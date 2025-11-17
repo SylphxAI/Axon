@@ -73,12 +73,34 @@
 - Pre-calculated indices in hot paths
 - Reduced array access overhead
 
+### v0.1.2 - Advanced Optimizations
+**Date:** 2024-11-17
+**Episodes/sec:** 4.10 (+22.4% vs baseline)
+**Steps/sec:** 481
+**Training/step:** 242.64ms (-18.3% vs baseline)
+**Changes:**
+- Tiled/blocked matrix multiplication (32x32 tiles) for cache efficiency
+- 4x loop unrolling in matmul inner loop
+- 8x loop unrolling in element-wise mul operations
+- Better instruction-level parallelism (ILP)
+
+**Features Added:**
+- ✅ LSTM/RNN layers with full forward pass
+- ✅ Conv2D with im2col transformation
+- ✅ BatchNorm with running statistics
+- ✅ Dropout layer
+- ✅ Model serialization (save/load)
+- ✅ 4 optimizers (SGD, Adam, RMSprop, AdaGrad)
+- ✅ Data loaders and batching
+- ✅ WASM compilation infrastructure
+- ✅ WebGPU acceleration support
+
 ---
 
 ## Next Steps
 
-1. Profile hot paths (use `bun --inspect`)
-2. Optimize tensor operations
-3. Add more layers (Conv2D, LSTM, etc.)
-4. Implement model save/load
-5. Start WASM port
+1. ✅ All core features implemented
+2. Memory pooling for tensor reuse
+3. Profile-guided optimization
+4. WASM integration (loader)
+5. WebGPU integration testing

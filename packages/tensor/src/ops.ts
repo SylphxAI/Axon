@@ -211,20 +211,24 @@ export function mul(a: Tensor, b: Tensor): Tensor {
   const requiresGrad = a.requiresGrad || b.requiresGrad
   const data = new Float32Array(Math.max(a.data.length, b.data.length))
 
-  // Broadcasting support - optimized
+  // Broadcasting support - highly optimized
   if (a.shape.length === b.shape.length && a.data.length === b.data.length) {
     const aData = a.data
     const bData = b.data
     const len = data.length
 
-    // Unroll by 4
-    const len4 = len - (len % 4)
+    // Unroll by 8 for better ILP
+    const len8 = len - (len % 8)
     let i = 0
-    for (; i < len4; i += 4) {
+    for (; i < len8; i += 8) {
       data[i] = aData[i]! * bData[i]!
       data[i + 1] = aData[i + 1]! * bData[i + 1]!
       data[i + 2] = aData[i + 2]! * bData[i + 2]!
       data[i + 3] = aData[i + 3]! * bData[i + 3]!
+      data[i + 4] = aData[i + 4]! * bData[i + 4]!
+      data[i + 5] = aData[i + 5]! * bData[i + 5]!
+      data[i + 6] = aData[i + 6]! * bData[i + 6]!
+      data[i + 7] = aData[i + 7]! * bData[i + 7]!
     }
     for (; i < len; i++) {
       data[i] = aData[i]! * bData[i]!
@@ -234,14 +238,18 @@ export function mul(a: Tensor, b: Tensor): Tensor {
     const aData = a.data
     const len = a.data.length
 
-    // Unroll by 4
-    const len4 = len - (len % 4)
+    // Unroll by 8
+    const len8 = len - (len % 8)
     let i = 0
-    for (; i < len4; i += 4) {
+    for (; i < len8; i += 8) {
       data[i] = aData[i]! * bValue
       data[i + 1] = aData[i + 1]! * bValue
       data[i + 2] = aData[i + 2]! * bValue
       data[i + 3] = aData[i + 3]! * bValue
+      data[i + 4] = aData[i + 4]! * bValue
+      data[i + 5] = aData[i + 5]! * bValue
+      data[i + 6] = aData[i + 6]! * bValue
+      data[i + 7] = aData[i + 7]! * bValue
     }
     for (; i < len; i++) {
       data[i] = aData[i]! * bValue
@@ -251,14 +259,18 @@ export function mul(a: Tensor, b: Tensor): Tensor {
     const bData = b.data
     const len = b.data.length
 
-    // Unroll by 4
-    const len4 = len - (len % 4)
+    // Unroll by 8
+    const len8 = len - (len % 8)
     let i = 0
-    for (; i < len4; i += 4) {
+    for (; i < len8; i += 8) {
       data[i] = aValue * bData[i]!
       data[i + 1] = aValue * bData[i + 1]!
       data[i + 2] = aValue * bData[i + 2]!
       data[i + 3] = aValue * bData[i + 3]!
+      data[i + 4] = aValue * bData[i + 4]!
+      data[i + 5] = aValue * bData[i + 5]!
+      data[i + 6] = aValue * bData[i + 6]!
+      data[i + 7] = aValue * bData[i + 7]!
     }
     for (; i < len; i++) {
       data[i] = aValue * bData[i]!
@@ -303,30 +315,56 @@ export function matmul(a: Tensor, b: Tensor): Tensor {
   const requiresGrad = a.requiresGrad || b.requiresGrad
   const data = new Float32Array(aRows! * bCols!)
 
-  // Optimized matrix multiplication
-  // Cache dimensions for faster access
+  // Highly optimized matrix multiplication with tiling
   const rows = aRows!
   const cols = bCols!
   const inner = aCols!
   const aData = a.data
   const bData = b.data
 
-  // Use local variables and pre-calculated indices for better JIT optimization
-  for (let i = 0; i < rows; i++) {
-    const aRowOffset = i * inner
-    const outRowOffset = i * cols
+  // Tile size for cache optimization (L1 cache ~32KB)
+  const TILE = 32
 
-    for (let j = 0; j < cols; j++) {
-      let sum = 0
-      // Unroll first iteration to avoid branch in loop
-      if (inner > 0) {
-        sum = aData[aRowOffset]! * bData[j]!
+  // Blocked/tiled matrix multiplication for cache efficiency
+  for (let ii = 0; ii < rows; ii += TILE) {
+    const iMax = Math.min(ii + TILE, rows)
 
-        for (let k = 1; k < inner; k++) {
-          sum += aData[aRowOffset + k]! * bData[k * cols + j]!
+    for (let jj = 0; jj < cols; jj += TILE) {
+      const jMax = Math.min(jj + TILE, cols)
+
+      for (let kk = 0; kk < inner; kk += TILE) {
+        const kMax = Math.min(kk + TILE, inner)
+
+        // Compute tile
+        for (let i = ii; i < iMax; i++) {
+          const aRowOffset = i * inner
+          const outRowOffset = i * cols
+
+          for (let j = jj; j < jMax; j++) {
+            let sum = data[outRowOffset + j]
+
+            // Unroll by 4 for better ILP
+            let k = kk
+            const kMax4 = kMax - 3
+
+            for (; k < kMax4; k += 4) {
+              const aIdx = aRowOffset + k
+              sum +=
+                aData[aIdx]! * bData[k * cols + j]! +
+                aData[aIdx + 1]! * bData[(k + 1) * cols + j]! +
+                aData[aIdx + 2]! * bData[(k + 2) * cols + j]! +
+                aData[aIdx + 3]! * bData[(k + 3) * cols + j]!
+            }
+
+            // Handle remainder
+            for (; k < kMax; k++) {
+              sum += aData[aRowOffset + k]! * bData[k * cols + j]!
+            }
+
+            data[outRowOffset + j] = sum
+          }
         }
       }
-      data[outRowOffset + j] = sum
     }
   }
 
