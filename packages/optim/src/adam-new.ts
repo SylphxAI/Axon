@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@sylphx/tensor'
-import { sub, mul, add, scalar, zeros, div, sqrt, square, acquireBuffer } from '@sylphx/tensor'
+import { sub, mul, add, scalar, zeros, div, sqrt, square } from '@sylphx/tensor'
 import type { Optimizer } from './types'
 
 /**

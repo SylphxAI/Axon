@@ -4,7 +4,7 @@
  */
 
 import type { Tensor } from '@sylphx/tensor'
-import { backward, zeroGrad as zeroGradTensor } from '@sylphx/tensor'
+import { backward } from '@sylphx/tensor'
 
 /**
  * Extract all trainable parameters from model state

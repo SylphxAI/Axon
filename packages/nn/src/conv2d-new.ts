@@ -4,6 +4,7 @@
 
 import type { Tensor } from '@sylphx/tensor'
 import { heNormal, uniform, matmul, acquireBuffer } from '@sylphx/tensor'
+import type { Layer } from './types'
 
 /**
  * Conv2D layer state
@@ -13,47 +14,59 @@ export type Conv2DState = {
   readonly bias: Tensor // [outChannels]
   readonly stride: number
   readonly padding: number
+  readonly inChannels: number
+  readonly outChannels: number
+  readonly kernelSize: number
 }
 
 /**
- * Initialize Conv2D layer
- *
- * @param inChannels Number of input channels
- * @param outChannels Number of output channels
- * @param kernelSize Kernel size (square)
- * @param stride Stride (default: 1)
- * @param padding Padding (default: 0)
+ * Conv2D layer factory
  */
-export function init(
+export const Conv2D = (
   inChannels: number,
   outChannels: number,
   kernelSize: number,
   stride: number = 1,
   padding: number = 0
-): Conv2DState {
-  const bound = 1 / Math.sqrt(inChannels * kernelSize * kernelSize)
+): Layer<Conv2DState> => ({
+  init: (): Conv2DState => {
+    const bound = 1 / Math.sqrt(inChannels * kernelSize * kernelSize)
 
-  // Weight: [outChannels, inChannels, kernelH, kernelW]
-  // For now, flatten to 2D for compatibility
-  const weight = heNormal(
-    [outChannels, inChannels * kernelSize * kernelSize],
-    { requiresGrad: true }
-  )
+    // Weight: [outChannels, inChannels * kernelH * kernelW]
+    const weight = heNormal(
+      [outChannels, inChannels * kernelSize * kernelSize],
+      { requiresGrad: true }
+    )
 
-  return {
-    weight,
-    bias: uniform([outChannels], -bound, bound, { requiresGrad: true }),
-    stride,
-    padding,
-  }
-}
+    return {
+      weight,
+      bias: uniform([outChannels], -bound, bound, { requiresGrad: true }),
+      stride,
+      padding,
+      inChannels,
+      outChannels,
+      kernelSize,
+    }
+  },
+
+  forward: (_input: Tensor, _state: Conv2DState): Tensor => {
+    // Input expected as flattened 4D: [batch * channels * height * width]
+    // Shape needs to be tracked externally or encoded in tensor metadata
+    // For now, this is a simplified version
+    // Full implementation would need inputShape parameter
+
+    // This is a placeholder - proper implementation needs shape information
+    // which requires extending the Layer interface or using a wrapper
+    throw new Error('Conv2D forward requires shape information - use conv2d.forward() directly')
+  },
+})
+
+/**
+ * Helper functions for Conv2D (exported for direct use)
+ */
 
 /**
  * Forward pass through Conv2D using im2col
- *
- * Input: Flattened 4D tensor [batch * channels * height * width]
- * Expected logical shape: [batch, channels, height, width]
- * Output: Flattened 4D tensor [batch * outChannels * outHeight * outWidth]
  */
 export function forward(
   input: Tensor,
@@ -61,17 +74,10 @@ export function forward(
   inputShape: [number, number, number, number] // [batch, channels, height, width]
 ): Tensor {
   const [batch, inChannels, inH, inW] = inputShape
-  const { weight, bias, stride, padding } = state
+  const { weight, bias, stride, padding, kernelSize } = state
 
-  // Extract kernel dimensions from weight shape
-  // Weight shape: [outChannels, inChannels * kH * kW]
-  const kernelSize = Math.sqrt(weight.shape[1]! / inChannels)
   const kH = kernelSize
   const kW = kernelSize
-
-  if (!Number.isInteger(kernelSize)) {
-    throw new Error('Invalid weight shape for square kernel')
-  }
 
   // Calculate output dimensions
   const outH = Math.floor((inH + 2 * padding - kH) / stride + 1)
@@ -99,10 +105,9 @@ export function forward(
   // Result: [outChannels, batch * outH * outW]
   const convResult = matmul(weight, colMatrix)
 
-  // Add bias: broadcast bias across spatial dimensions
+  // Add bias
   const output = addBias(convResult, bias, batch, outH, outW)
 
-  // Return with flattened data, caller can reshape as needed
   return output
 }
 
@@ -123,11 +128,7 @@ export function getOutputShape(
 }
 
 /**
- * im2col transformation - converts image to column matrix
- * Extracts all patches for convolution
- *
- * Input: [batch, channels, height, width] (flattened)
- * Output: [channels * kH * kW, batch * outH * outW] (as 2D tensor)
+ * im2col transformation
  */
 function im2col(
   input: Tensor,
@@ -208,15 +209,13 @@ function padInput(
 
   return {
     data: paddedData,
-    shape: input.shape, // Keep original shape reference
+    shape: input.shape,
     requiresGrad: input.requiresGrad,
   }
 }
 
 /**
  * Add bias to convolution result
- * convResult: [outChannels, batch * outH * outW]
- * bias: [outChannels]
  */
 function addBias(
   convResult: Tensor,
@@ -234,7 +233,7 @@ function addBias(
     const biasVal = bias.data[c]!
     const offset = c * spatialSize
 
-    // Unroll by 8 for better performance
+    // Unroll by 8
     let i = 0
     const len8 = spatialSize - 7
     for (; i < len8; i += 8) {
