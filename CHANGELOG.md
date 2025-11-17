@@ -5,6 +5,32 @@ All notable changes to NeuronLine will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2024-11-17
+
+### Added
+- **WASM acceleration fully functional** (`@neuronline/wasm`)
+  - Implemented raw pointer memory management for WASM operations
+  - Added WASMMemoryAllocator for automatic buffer management
+  - High-level wasm API: `add()`, `mul()`, `matmul()`, `relu()`, `sigmoid()`, `tanh()`
+  - All 7 WASM tests passing (previously 5/7)
+  - Operations use `load`/`store` for direct memory access
+  - ~1.4KB inline base64-encoded WASM module
+
+- **GRU layer implementation** (`@neuronline/nn`)
+  - Gated Recurrent Unit for sequence modeling
+  - Simpler than LSTM with only 2 gates (reset and update)
+  - Single time step forward pass
+  - Sequence processing with `forwardSequence()`
+  - Compatible with existing autograd system
+
+### Fixed
+- WebGPU type error: `GPUCommandQueue` → `GPUQueue`
+- AssemblyScript functions now use raw pointers instead of typed arrays
+
+### Changed
+- All tests passing: 66/66 (100%)
+- No breaking changes to API
+
 ## [0.1.4] - 2024-11-17
 
 ### Performance
