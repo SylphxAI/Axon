@@ -8,7 +8,7 @@
  */
 
 export * from './types'
-export * from './adam-new'
-export * from './sgd-new'
-export * from './rmsprop-new'
-export * from './adagrad-new'
+export * from './adam'
+export * from './sgd'
+export * from './rmsprop'
+export * from './adagrad'

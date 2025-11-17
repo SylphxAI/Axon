@@ -10,11 +10,11 @@
  */
 
 export * from './types'
-export * from './linear-new'
+export * from './linear'
 export * from './activations'
 export * from './sequential'
-export * from './dropout-new'
-export * from './conv2d-new'
+export * from './dropout'
+export * from './conv2d'
 
 // RNN layers (separate utilities for sequence processing)
 export * as LSTM from './lstm'
