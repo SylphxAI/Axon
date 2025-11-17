@@ -1,4 +1,4 @@
-import type { Product, UserContext } from '@sylphx/neuronline-predictors'
+import type { Product, UserContext } from '@sylphx/predictors'
 import {
   assignVariant,
   calculateSampleSize,
@@ -13,7 +13,7 @@ import {
   trackConversion,
   trackFeedback,
   trackImpression,
-} from '@sylphx/neuronline-predictors'
+} from '@sylphx/predictors'
 
 console.log('🛒 E-commerce Recommendation System Demo\n')
 

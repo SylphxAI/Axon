@@ -2,8 +2,8 @@
  * Dropout layer - Pure functional implementation
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { mul, acquireBuffer } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { mul, acquireBuffer } from '@sylphx/tensor'
 
 /**
  * Dropout configuration

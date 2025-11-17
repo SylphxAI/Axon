@@ -1,4 +1,4 @@
-import { NeuralNetwork } from '@sylphx/neuronline-core'
+import { NeuralNetwork } from '@sylphx/core'
 
 console.log('🔍 Debugging XOR Learning\n')
 

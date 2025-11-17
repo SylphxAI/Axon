@@ -1,5 +1,5 @@
-import { OnlineLearner } from '@sylphx/neuronline-core'
-import type { OnlineLearnerConfig, TrainingExample } from '@sylphx/neuronline-core'
+import { OnlineLearner } from '@sylphx/core'
+import type { OnlineLearnerConfig, TrainingExample } from '@sylphx/core'
 import { sequenceToVector } from './feature-extractor'
 import type { SequenceContext } from './feature-extractor'
 

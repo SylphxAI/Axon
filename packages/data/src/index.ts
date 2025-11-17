@@ -1,5 +1,5 @@
 /**
- * @neuronline/data
+ * @sylphx/data
  * Data loaders and utilities
  */
 

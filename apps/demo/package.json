@@ -1,22 +1,22 @@
 {
-  "name": "@sylphx/neuronline-demo",
+  "name": "axon-demo",
   "version": "0.1.0",
   "private": true,
-  "description": "Demo application for NeuronLine",
+  "description": "Demo application for Axon",
   "type": "module",
   "scripts": {
     "dev": "bun run index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sylphx/neuronline-core": "workspace:*",
-    "@sylphx/neuronline-predictors": "workspace:*",
-    "@neuronline/wasm": "workspace:*",
-    "@neuronline/webgpu": "workspace:*",
-    "@neuronline/tensor": "workspace:*",
-    "@neuronline/functional": "workspace:*",
-    "@neuronline/nn": "workspace:*",
-    "@neuronline/optim": "workspace:*"
+    "@sylphx/core": "workspace:*",
+    "@sylphx/predictors": "workspace:*",
+    "@sylphx/wasm": "workspace:*",
+    "@sylphx/webgpu": "workspace:*",
+    "@sylphx/tensor": "workspace:*",
+    "@sylphx/functional": "workspace:*",
+    "@sylphx/nn": "workspace:*",
+    "@sylphx/optim": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

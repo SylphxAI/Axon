@@ -1,6 +1,6 @@
-import { ClickPredictor } from '@sylphx/neuronline-predictors'
-import { OnlineLearner, createModelState, learn, predict } from '@sylphx/neuronline-core'
-import type { TrainingExample } from '@sylphx/neuronline-core'
+import { ClickPredictor } from '@sylphx/predictors'
+import { OnlineLearner, createModelState, learn, predict } from '@sylphx/core'
+import type { TrainingExample } from '@sylphx/core'
 
 console.log('📊 NeuronLine Accuracy & Size Analysis\n')
 

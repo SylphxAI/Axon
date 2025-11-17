@@ -1,8 +1,8 @@
 {
-  "name": "@neuronline/optim",
-  "version": "3.0.0",
+  "name": "@sylphx/optim",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Pure functional optimizers for NeuronLine",
+  "description": "Pure functional optimizers (SGD, Adam, RMSprop, AdaGrad)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -11,7 +11,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@neuronline/tensor": "workspace:*"
+    "@sylphx/tensor": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
@@ -26,12 +26,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sylphxai/neuronline.git",
+    "url": "https://github.com/SylphxAI/Axon.git",
     "directory": "packages/optim"
   },
-  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "homepage": "https://github.com/SylphxAI/Axon#readme",
   "bugs": {
-    "url": "https://github.com/sylphxai/neuronline/issues"
+    "url": "https://github.com/SylphxAI/Axon/issues"
   },
   "publishConfig": {
     "access": "public"

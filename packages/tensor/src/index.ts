@@ -1,5 +1,5 @@
 /**
- * @neuronline/tensor
+ * @sylphx/tensor
  * Pure functional tensor library with autograd
  */
 

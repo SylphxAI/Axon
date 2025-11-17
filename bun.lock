@@ -11,17 +11,17 @@
       },
     },
     "apps/demo": {
-      "name": "@sylphx/neuronline-demo",
+      "name": "axon-demo",
       "version": "0.1.0",
       "dependencies": {
-        "@neuronline/functional": "workspace:*",
-        "@neuronline/nn": "workspace:*",
-        "@neuronline/optim": "workspace:*",
-        "@neuronline/tensor": "workspace:*",
-        "@neuronline/wasm": "workspace:*",
-        "@neuronline/webgpu": "workspace:*",
-        "@sylphx/neuronline-core": "workspace:*",
-        "@sylphx/neuronline-predictors": "workspace:*",
+        "@sylphx/core": "workspace:*",
+        "@sylphx/functional": "workspace:*",
+        "@sylphx/nn": "workspace:*",
+        "@sylphx/optim": "workspace:*",
+        "@sylphx/predictors": "workspace:*",
+        "@sylphx/tensor": "workspace:*",
+        "@sylphx/wasm": "workspace:*",
+        "@sylphx/webgpu": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -32,14 +32,14 @@
       "name": "game-2048",
       "version": "1.0.0",
       "dependencies": {
-        "@neuronline/functional": "workspace:*",
-        "@neuronline/nn": "workspace:*",
-        "@neuronline/optim": "workspace:*",
-        "@neuronline/tensor": "workspace:*",
+        "@sylphx/functional": "workspace:*",
+        "@sylphx/nn": "workspace:*",
+        "@sylphx/optim": "workspace:*",
+        "@sylphx/tensor": "workspace:*",
       },
     },
     "packages/core": {
-      "name": "@sylphx/neuronline-core",
+      "name": "@sylphx/core",
       "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "latest",
@@ -47,45 +47,45 @@
       },
     },
     "packages/data": {
-      "name": "@neuronline/data",
+      "name": "@sylphx/data",
       "version": "0.1.0",
       "dependencies": {
-        "@neuronline/tensor": "workspace:*",
+        "@sylphx/tensor": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^5.7.3",
       },
     },
     "packages/functional": {
-      "name": "@neuronline/functional",
-      "version": "3.0.0",
+      "name": "@sylphx/functional",
+      "version": "0.1.0",
       "dependencies": {
-        "@neuronline/tensor": "workspace:*",
+        "@sylphx/tensor": "workspace:*",
       },
     },
     "packages/nn": {
-      "name": "@neuronline/nn",
-      "version": "3.0.0",
+      "name": "@sylphx/nn",
+      "version": "0.1.0",
       "dependencies": {
-        "@neuronline/functional": "workspace:*",
-        "@neuronline/tensor": "workspace:*",
+        "@sylphx/functional": "workspace:*",
+        "@sylphx/tensor": "workspace:*",
       },
     },
     "packages/optim": {
-      "name": "@neuronline/optim",
-      "version": "3.0.0",
+      "name": "@sylphx/optim",
+      "version": "0.1.0",
       "dependencies": {
-        "@neuronline/tensor": "workspace:*",
+        "@sylphx/tensor": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^5.7.3",
       },
     },
     "packages/predictors": {
-      "name": "@sylphx/neuronline-predictors",
+      "name": "@sylphx/predictors",
       "version": "0.1.0",
       "dependencies": {
-        "@sylphx/neuronline-core": "workspace:*",
+        "@sylphx/core": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -93,18 +93,18 @@
       },
     },
     "packages/tensor": {
-      "name": "@neuronline/tensor",
+      "name": "@sylphx/tensor",
       "version": "0.1.0",
       "optionalDependencies": {
-        "@neuronline/wasm": "workspace:*",
-        "@neuronline/webgpu": "workspace:*",
+        "@sylphx/wasm": "workspace:*",
+        "@sylphx/webgpu": "workspace:*",
       },
     },
     "packages/wasm": {
-      "name": "@neuronline/wasm",
+      "name": "@sylphx/wasm",
       "version": "0.1.0",
       "dependencies": {
-        "@neuronline/tensor": "workspace:*",
+        "@sylphx/tensor": "workspace:*",
       },
       "devDependencies": {
         "assemblyscript": "^0.27.0",
@@ -112,7 +112,7 @@
       },
     },
     "packages/webgpu": {
-      "name": "@neuronline/webgpu",
+      "name": "@sylphx/webgpu",
       "version": "0.1.0",
       "devDependencies": {
         "@webgpu/types": "^0.1.51",
@@ -139,25 +139,23 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@1.9.4", "", { "os": "win32", "cpu": "x64" }, "sha512-8Y5wMhVIPaWe6jw2H+KlEm4wP/f7EW3810ZLmDlrEEy5KvBsb9ECEfu/kMWD484ijfQ8+nIi0giMgu9g1UAuuA=="],
 
-    "@neuronline/data": ["@neuronline/data@workspace:packages/data"],
+    "@sylphx/core": ["@sylphx/core@workspace:packages/core"],
 
-    "@neuronline/functional": ["@neuronline/functional@workspace:packages/functional"],
+    "@sylphx/data": ["@sylphx/data@workspace:packages/data"],
 
-    "@neuronline/nn": ["@neuronline/nn@workspace:packages/nn"],
+    "@sylphx/functional": ["@sylphx/functional@workspace:packages/functional"],
 
-    "@neuronline/optim": ["@neuronline/optim@workspace:packages/optim"],
+    "@sylphx/nn": ["@sylphx/nn@workspace:packages/nn"],
 
-    "@neuronline/tensor": ["@neuronline/tensor@workspace:packages/tensor"],
+    "@sylphx/optim": ["@sylphx/optim@workspace:packages/optim"],
 
-    "@neuronline/wasm": ["@neuronline/wasm@workspace:packages/wasm"],
+    "@sylphx/predictors": ["@sylphx/predictors@workspace:packages/predictors"],
 
-    "@neuronline/webgpu": ["@neuronline/webgpu@workspace:packages/webgpu"],
+    "@sylphx/tensor": ["@sylphx/tensor@workspace:packages/tensor"],
 
-    "@sylphx/neuronline-core": ["@sylphx/neuronline-core@workspace:packages/core"],
+    "@sylphx/wasm": ["@sylphx/wasm@workspace:packages/wasm"],
 
-    "@sylphx/neuronline-demo": ["@sylphx/neuronline-demo@workspace:apps/demo"],
-
-    "@sylphx/neuronline-predictors": ["@sylphx/neuronline-predictors@workspace:packages/predictors"],
+    "@sylphx/webgpu": ["@sylphx/webgpu@workspace:packages/webgpu"],
 
     "@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
 
@@ -168,6 +166,8 @@
     "@webgpu/types": ["@webgpu/types@0.1.66", "", {}, "sha512-YA2hLrwLpDsRueNDXIMqN9NTzD6bCDkuXbOSe0heS+f8YE8usA6Gbv1prj81pzVHrbaAma7zObnIC+I6/sXJgA=="],
 
     "assemblyscript": ["assemblyscript@0.27.37", "", { "dependencies": { "binaryen": "116.0.0-nightly.20240114", "long": "^5.2.4" }, "bin": { "asc": "bin/asc.js", "asinit": "bin/asinit.js" } }, "sha512-YtY5k3PiV3SyUQ6gRlR2OCn8dcVRwkpiG/k2T5buoL2ymH/Z/YbaYWbk/f9mO2HTgEtGWjPiAQrIuvA7G/63Gg=="],
+
+    "axon-demo": ["axon-demo@workspace:apps/demo"],
 
     "binaryen": ["binaryen@116.0.0-nightly.20240114", "", { "bin": { "wasm2js": "bin/wasm2js", "wasm-opt": "bin/wasm-opt" } }, "sha512-0GZrojJnuhoe+hiwji7QFaL3tBlJoA+KFUN7ouYSDGZLSo9CKM8swQX8n/UcbR0d1VuZKU+nhogNzv423JEu5A=="],
 

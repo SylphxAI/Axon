@@ -3,7 +3,7 @@
  * Verify that loadAcceleration() works and matmul uses WASM
  */
 
-import { loadAcceleration, matmul, zeros } from '@neuronline/tensor'
+import { loadAcceleration, matmul, zeros } from '@sylphx/tensor'
 
 console.log('🧪 Testing WASM Integration\n')
 

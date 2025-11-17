@@ -2,8 +2,8 @@
  * Batch Normalization layer - Pure functional implementation
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { ones, zeros, mul, add, scalar, acquireBuffer } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { ones, zeros, mul, add, scalar, acquireBuffer } from '@sylphx/tensor'
 
 /**
  * BatchNorm layer state

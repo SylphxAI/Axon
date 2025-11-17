@@ -1,5 +1,5 @@
 /**
- * @neuronline/nn
+ * @sylphx/nn
  * Pure functional neural network layers
  */
 

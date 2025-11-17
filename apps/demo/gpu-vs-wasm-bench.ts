@@ -3,7 +3,7 @@
  * Compares synchronous WASM vs async WebGPU acceleration
  */
 
-import { loadAcceleration, loadGPUAcceleration, getGPU } from '@neuronline/tensor'
+import { loadAcceleration, loadGPUAcceleration, getGPU } from '@sylphx/tensor'
 
 console.log('🔬 WebGPU vs WASM Performance Benchmark\n')
 
@@ -78,7 +78,7 @@ for (const { name, m, k, n, elements, iterations } of sizes) {
   // Benchmark WASM
   let wasmTime = 0
   if (wasmLoaded) {
-    const { wasm } = await import('@neuronline/wasm')
+    const { wasm } = await import('@sylphx/wasm')
     wasmTime = benchmark(
       'WASM',
       () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import * as Linear from './linear'
-import * as T from '@neuronline/tensor'
+import * as T from '@sylphx/tensor'
 
 describe('Linear Layer', () => {
   test('initialization creates correct shapes', () => {

@@ -1,4 +1,4 @@
-import { NeuralNetwork } from '@sylphx/neuronline-core'
+import { NeuralNetwork } from '@sylphx/core'
 
 console.log('⚡ Neural Network Performance Benchmark\n')
 console.log('Comparing different network sizes and architectures')

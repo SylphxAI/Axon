@@ -5,7 +5,7 @@
 
 import * as game from './game'
 import * as agent from './agent'
-import { loadAcceleration } from '@neuronline/tensor'
+import { loadAcceleration } from '@sylphx/tensor'
 
 console.log('⚡ NeuronLine Performance Benchmark\n')
 

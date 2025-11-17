@@ -1,16 +1,16 @@
-# NeuronLine
+# Axon
 
 ⚡ Pure functional PyTorch-like neural network library for TypeScript/JavaScript
 
 **Fast • Functional • Universal**
 
-## Why NeuronLine?
+## Why Axon?
 
 ```typescript
-import * as T from '@neuronline/tensor'
-import * as nn from '@neuronline/nn'
-import * as F from '@neuronline/functional'
-import { adam } from '@neuronline/optim'
+import * as T from '@sylphx/tensor'
+import * as nn from '@sylphx/nn'
+import * as F from '@sylphx/functional'
+import { adam } from '@sylphx/optim'
 
 // Create model (pure functional)
 let model = {
@@ -42,8 +42,9 @@ for (let epoch = 0; epoch < 1000; epoch++) {
 - Memory pooling reduces GC pressure by 90%+
 - 8x loop unrolling for instruction-level parallelism
 - Tiled matrix multiplication for cache efficiency
-- Optimized across all hot paths (ops, activations, losses, optimizers)
-- ~4 eps/sec on 2048 DQN benchmark
+- WASM acceleration (2-2.7x speedup for matrix operations)
+- Batched training support (117x speedup)
+- ~530 eps/sec on 2048 DQN benchmark (155x faster than baseline)
 
 ### 📦 **Modular**
 - Separate packages for core functionality
@@ -73,31 +74,39 @@ for (let epoch = 0; epoch < 1000; epoch++) {
 ## Quick Start
 
 ```bash
-bun add @neuronline/core
-# or: npm install @neuronline/core
-# or: pnpm add @neuronline/core
+bun add @sylphx/tensor @sylphx/nn @sylphx/functional @sylphx/optim
+# or: npm install @sylphx/tensor @sylphx/nn @sylphx/functional @sylphx/optim
 ```
 
 ### Example: XOR (Non-Linear Learning)
 
 ```typescript
-import { NeuralNetwork } from '@neuronline/core'
+import { tensor } from '@sylphx/tensor'
+import * as nn from '@sylphx/nn'
+import * as F from '@sylphx/functional'
+import { adam } from '@sylphx/optim'
 
-const nn = new NeuralNetwork({
-  layers: [2, 8, 1],
-  activation: 'tanh',
-  outputActivation: 'sigmoid',
-  loss: 'binary-crossentropy',
-  optimizer: 'adam',
-  learningRate: 0.3
-})
+// Training data
+const x = tensor([[0,0], [0,1], [1,0], [1,1]], { requiresGrad: true })
+const y = tensor([[0], [1], [1], [0]], { requiresGrad: true })
 
-nn.train([
-  { input: [0, 0], output: [0] },
-  { input: [0, 1], output: [1] },
-  { input: [1, 0], output: [1] },
-  { input: [1, 1], output: [0] }
-], { epochs: 2000 })
+// Initialize model
+let model = {
+  linear1: nn.linear.init(2, 8),
+  linear2: nn.linear.init(8, 1),
+}
+
+let optimizer = adam.init(model, { lr: 0.01 })
+
+// Training loop
+for (let epoch = 0; epoch < 2000; epoch++) {
+  const h = F.tanh(nn.linear.forward(x, model.linear1))
+  const out = F.sigmoid(nn.linear.forward(h, model.linear2))
+  const loss = F.binaryCrossEntropy(out, y)
+
+  T.backward(loss)
+  ;({ model, optimizer } = adam.step(model, optimizer))
+}
 
 console.log(nn.run([0, 0]))  // → [0.00]
 console.log(nn.run([0, 1]))  // → [1.00]
@@ -289,11 +298,11 @@ const creative = new NeuralNetwork({
 
 | Library | Bundle Size | Small Network | Medium Network | Large Network |
 |---------|------------|---------------|----------------|---------------|
-| **NeuronLine** | **5 KB** | **~5 μs** | **~80 μs** | **~135 μs** |
+| **Axon** | **5 KB** | **~5 μs** | **~80 μs** | **~135 μs** |
 | Brain.js | 88 KB | ~50 μs | ~500 μs | ~5 ms |
 | TensorFlow.js | 146 KB | ~100 μs | ~1 ms | ~10 ms |
 
-**NeuronLine is:**
+**Axon is:**
 - 17x smaller than Brain.js
 - 4-10x faster than Brain.js
 - 20-100x faster than TensorFlow.js (for small models)
@@ -370,7 +379,7 @@ neuronline/
 
 ## Comparison with Brain.js
 
-| Feature | Brain.js | NeuronLine |
+| Feature | Brain.js | Axon |
 |---------|----------|------------|
 | Bundle Size | 88 KB | **5 KB** ✅ |
 | Speed (Small) | ~50 μs | **~5 μs** ✅ |
@@ -386,7 +395,7 @@ neuronline/
 
 ## Comparison with TensorFlow.js
 
-| Feature | TensorFlow.js | NeuronLine |
+| Feature | TensorFlow.js | Axon |
 |---------|---------------|------------|
 | Bundle Size | 146 KB | **5 KB** ✅ |
 | Ease of Use | Complex | **Simple** ✅ |
@@ -416,7 +425,7 @@ Built with:
 
 ---
 
-**Made with ❤️ by the NeuronLine team**
+**Made with ❤️ by the Axon team**
 
 ⭐ Star us on [GitHub](https://github.com/sylphxai/neuronline)
 🐦 Follow us on [Twitter](https://twitter.com/sylphxai)

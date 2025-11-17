@@ -3,9 +3,9 @@
  * Long Short-Term Memory for sequence modeling
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { xavierNormal, zeros, matmul, add, mul } from '@neuronline/tensor'
-import { sigmoid, tanh } from '@neuronline/functional'
+import type { Tensor } from '@sylphx/tensor'
+import { xavierNormal, zeros, matmul, add, mul } from '@sylphx/tensor'
+import { sigmoid, tanh } from '@sylphx/functional'
 
 /**
  * LSTM layer state

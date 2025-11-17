@@ -4,8 +4,8 @@
  * Shows potential speedup from integrating acceleration
  */
 
-import { loadWASM, wasm } from '@neuronline/wasm'
-import { initWebGPU, isWebGPUSupported, matmulGPU, addGPU, reluGPU } from '@neuronline/webgpu'
+import { loadWASM, wasm } from '@sylphx/wasm'
+import { initWebGPU, isWebGPUSupported, matmulGPU, addGPU, reluGPU } from '@sylphx/webgpu'
 
 // Pure TypeScript reference implementations
 function tsAdd(a: Float32Array, b: Float32Array): Float32Array {

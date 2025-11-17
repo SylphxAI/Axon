@@ -24,7 +24,7 @@ export async function loadAcceleration(): Promise<boolean> {
   if (wasmModule) return true
 
   try {
-    const { loadWASM, wasm } = await import('@neuronline/wasm')
+    const { loadWASM, wasm } = await import('@sylphx/wasm')
     await loadWASM()
     wasmModule = wasm
     return true
@@ -48,7 +48,7 @@ export async function loadGPUAcceleration(): Promise<boolean> {
   if (gpuModule) return true
 
   try {
-    const webgpu = await import('@neuronline/webgpu')
+    const webgpu = await import('@sylphx/webgpu')
     await webgpu.initWebGPU()
     gpuModule = webgpu
     return true

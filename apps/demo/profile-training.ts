@@ -3,10 +3,10 @@
  * Identifies hot paths and optimization opportunities in training loop
  */
 
-import * as T from '@neuronline/tensor'
-import * as F from '@neuronline/functional'
-import * as nn from '@neuronline/nn'
-import * as optim from '@neuronline/optim'
+import * as T from '@sylphx/tensor'
+import * as F from '@sylphx/functional'
+import * as nn from '@sylphx/nn'
+import * as optim from '@sylphx/optim'
 
 console.log('🔬 Training Performance Profiler\n')
 

@@ -3,8 +3,8 @@
  * Pure functional implementation
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { sub, mul, add, scalar, zeros, acquireBuffer } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { sub, mul, add, scalar, zeros, acquireBuffer } from '@sylphx/tensor'
 import type { OptimizerState, UpdateResult } from './types'
 
 export type AdamConfig = {

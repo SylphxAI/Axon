@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import * as SGD from './sgd'
-import * as T from '@neuronline/tensor'
+import * as T from '@sylphx/tensor'
 
 describe('SGD Optimizer', () => {
   test('init creates correct state', () => {

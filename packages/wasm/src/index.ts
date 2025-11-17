@@ -1,5 +1,5 @@
 /**
- * @neuronline/wasm
+ * @sylphx/wasm
  * WASM-accelerated tensor operations (universal loader)
  * Works in Node.js, browsers, Deno, and Bun
  */

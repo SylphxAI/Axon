@@ -1,8 +1,8 @@
 {
-  "name": "@sylphx/neuronline",
+  "name": "@sylphx/axon",
   "version": "0.1.0",
   "private": true,
-  "description": "Modern online learning neural network library for real-time user behavior prediction",
+  "description": "Pure functional PyTorch-like neural network library for TypeScript/JavaScript",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
     "dev": "bun run --filter='./packages/*' dev",
@@ -27,17 +27,16 @@
   },
   "keywords": [
     "machine-learning",
-    "online-learning",
     "neural-network",
-    "incremental-learning",
-    "user-behavior",
-    "prediction",
-    "personalization",
-    "privacy-first"
+    "deep-learning",
+    "autograd",
+    "pure-functional",
+    "typescript",
+    "pytorch-like"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/SylphxAI/neuronline.git"
+    "url": "https://github.com/SylphxAI/Axon.git"
   },
   "license": "MIT",
   "author": "SylphxAI"

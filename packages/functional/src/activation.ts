@@ -2,8 +2,8 @@
  * Pure functional activation functions with autograd support
  */
 
-import type { Tensor, GradFn } from '@neuronline/tensor'
-import { acquireBuffer } from '@neuronline/tensor'
+import type { Tensor, GradFn } from '@sylphx/tensor'
+import { acquireBuffer } from '@sylphx/tensor'
 
 /**
  * ReLU activation

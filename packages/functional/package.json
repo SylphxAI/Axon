@@ -1,8 +1,8 @@
 {
-  "name": "@neuronline/functional",
-  "version": "3.0.0",
+  "name": "@sylphx/functional",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Pure functional operations for NeuronLine (activations, loss, etc.)",
+  "description": "Pure functional operations (activations, loss functions)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -17,7 +17,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@neuronline/tensor": "workspace:*"
+    "@sylphx/tensor": "workspace:*"
   },
   "keywords": [
     "activation",
@@ -29,12 +29,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sylphxai/neuronline.git",
+    "url": "https://github.com/SylphxAI/Axon.git",
     "directory": "packages/functional"
   },
-  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "homepage": "https://github.com/SylphxAI/Axon#readme",
   "bugs": {
-    "url": "https://github.com/sylphxai/neuronline/issues"
+    "url": "https://github.com/SylphxAI/Axon/issues"
   },
   "publishConfig": {
     "access": "public"

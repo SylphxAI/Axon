@@ -9,9 +9,9 @@
     "benchmark": "bun run src/benchmark.ts"
   },
   "dependencies": {
-    "@neuronline/tensor": "workspace:*",
-    "@neuronline/functional": "workspace:*",
-    "@neuronline/nn": "workspace:*",
-    "@neuronline/optim": "workspace:*"
+    "@sylphx/tensor": "workspace:*",
+    "@sylphx/functional": "workspace:*",
+    "@sylphx/nn": "workspace:*",
+    "@sylphx/optim": "workspace:*"
   }
 }

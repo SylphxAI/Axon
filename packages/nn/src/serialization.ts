@@ -3,8 +3,8 @@
  * Pure functional save/load for neural networks
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { tensor } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { tensor } from '@sylphx/tensor'
 
 /**
  * Serializable model state

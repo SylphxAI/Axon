@@ -1,4 +1,4 @@
-// Online Learning (Legacy - will deprecate in favor of @neuronline/tensor + @neuronline/nn)
+// Online Learning (Legacy - will deprecate in favor of @sylphx/tensor + @sylphx/nn)
 export { OnlineLearner } from './online-learner'
 export type { OnlineLearnerConfig } from './online-learner'
 

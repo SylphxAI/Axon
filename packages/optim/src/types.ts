@@ -3,7 +3,7 @@
  * PyTorch-like API but with pure functions
  */
 
-import type { Tensor } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
 
 /**
  * Optimizer state (immutable)

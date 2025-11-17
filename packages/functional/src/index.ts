@@ -1,5 +1,5 @@
 /**
- * @neuronline/functional
+ * @sylphx/functional
  * Pure functional operations (activations, loss, etc.)
  */
 

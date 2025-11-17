@@ -1,4 +1,4 @@
-import { ClickPredictor, SequencePredictor } from '@sylphx/neuronline-predictors'
+import { ClickPredictor, SequencePredictor } from '@sylphx/predictors'
 
 console.log('🚀 NeuronLine Demo\n')
 

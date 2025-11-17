@@ -1,10 +1,10 @@
-import type { BanditSelection, BanditState } from '@sylphx/neuronline-core'
+import type { BanditSelection, BanditState } from '@sylphx/core'
 import {
   createBanditState,
   getBanditStats,
   thompsonSampling,
   updateBandit,
-} from '@sylphx/neuronline-core'
+} from '@sylphx/core'
 
 export interface Product {
   readonly id: string

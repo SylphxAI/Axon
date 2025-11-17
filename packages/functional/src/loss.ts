@@ -2,8 +2,8 @@
  * Pure functional loss functions with autograd support
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { mean, sub, mul, acquireBuffer } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { mean, sub, mul, acquireBuffer } from '@sylphx/tensor'
 
 /**
  * Mean Squared Error loss

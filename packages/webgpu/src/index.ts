@@ -1,5 +1,5 @@
 /**
- * @neuronline/webgpu
+ * @sylphx/webgpu
  * WebGPU-accelerated tensor operations
  */
 

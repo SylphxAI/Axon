@@ -1,4 +1,4 @@
-import { NeuralNetwork } from '@sylphx/neuronline-core'
+import { NeuralNetwork } from '@sylphx/core'
 
 console.log('🧠 NeuronLine V3: General-Purpose Neural Network\n')
 console.log('='.repeat(70))

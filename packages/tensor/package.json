@@ -1,8 +1,8 @@
 {
-  "name": "@neuronline/tensor",
+  "name": "@sylphx/tensor",
   "version": "0.1.0",
   "type": "module",
-  "description": "Pure functional tensor operations for NeuronLine",
+  "description": "Pure functional tensor operations with automatic differentiation",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -27,18 +27,18 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sylphxai/neuronline.git",
+    "url": "https://github.com/SylphxAI/Axon.git",
     "directory": "packages/tensor"
   },
-  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "homepage": "https://github.com/SylphxAI/Axon#readme",
   "bugs": {
-    "url": "https://github.com/sylphxai/neuronline/issues"
+    "url": "https://github.com/SylphxAI/Axon/issues"
   },
   "publishConfig": {
     "access": "public"
   },
   "optionalDependencies": {
-    "@neuronline/wasm": "workspace:*",
-    "@neuronline/webgpu": "workspace:*"
+    "@sylphx/wasm": "workspace:*",
+    "@sylphx/webgpu": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 /**
- * @neuronline/optim
+ * @sylphx/optim
  * Pure functional optimizers for neural networks
  */
 

@@ -2,8 +2,8 @@
  * Conv2D layer - Pure functional implementation
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { heNormal, uniform, matmul, acquireBuffer } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { heNormal, uniform, matmul, acquireBuffer } from '@sylphx/tensor'
 
 /**
  * Conv2D layer state

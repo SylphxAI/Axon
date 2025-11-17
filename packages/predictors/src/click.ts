@@ -1,5 +1,5 @@
-import { OnlineLearner } from '@sylphx/neuronline-core'
-import type { OnlineLearnerConfig, TrainingExample } from '@sylphx/neuronline-core'
+import { OnlineLearner } from '@sylphx/core'
+import type { OnlineLearnerConfig, TrainingExample } from '@sylphx/core'
 import { clickToVector } from './feature-extractor'
 import type { ClickContext } from './feature-extractor'
 

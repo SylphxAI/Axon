@@ -1,7 +1,7 @@
-import { OnlineLearner } from '@sylphx/neuronline-core'
-import type { TrainingExample } from '@sylphx/neuronline-core'
-import { createBanditState, thompsonSampling, updateBandit } from '@sylphx/neuronline-core'
-import { ClickPredictor } from '@sylphx/neuronline-predictors'
+import { OnlineLearner } from '@sylphx/core'
+import type { TrainingExample } from '@sylphx/core'
+import { createBanditState, thompsonSampling, updateBandit } from '@sylphx/core'
+import { ClickPredictor } from '@sylphx/predictors'
 
 console.log('🏃 Comprehensive Performance Benchmark\n')
 console.log('Testing different model sizes and operations...\n')

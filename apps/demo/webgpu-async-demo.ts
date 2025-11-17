@@ -6,7 +6,7 @@
  * Run in browser console or use a browser-based test runner
  */
 
-import * as T from '@neuronline/tensor'
+import * as T from '@sylphx/tensor'
 
 async function main() {
   console.log('🎮 WebGPU Async Operations Demo\n')

@@ -2,8 +2,8 @@
  * DataLoader - Pure functional data loading and batching
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { tensor } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { tensor } from '@sylphx/tensor'
 
 /**
  * Dataset interface

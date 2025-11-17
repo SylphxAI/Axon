@@ -4,9 +4,9 @@
  * Simpler than LSTM with fewer parameters
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { xavierNormal, zeros, matmul, add, mul, sub, ones } from '@neuronline/tensor'
-import { sigmoid, tanh } from '@neuronline/functional'
+import type { Tensor } from '@sylphx/tensor'
+import { xavierNormal, zeros, matmul, add, mul, sub, ones } from '@sylphx/tensor'
+import { sigmoid, tanh } from '@sylphx/functional'
 
 /**
  * GRU layer state

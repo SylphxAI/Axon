@@ -3,8 +3,8 @@
  * PyTorch-like API but with pure functions
  */
 
-import type { Tensor } from '@neuronline/tensor'
-import { heNormal, uniform, matmul, add, transpose } from '@neuronline/tensor'
+import type { Tensor } from '@sylphx/tensor'
+import { heNormal, uniform, matmul, add, transpose } from '@sylphx/tensor'
 
 /**
  * Linear layer state (immutable)

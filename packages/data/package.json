@@ -1,8 +1,8 @@
 {
-  "name": "@neuronline/data",
+  "name": "@sylphx/data",
   "version": "0.1.0",
   "type": "module",
-  "description": "Data loaders and utilities for NeuronLine",
+  "description": "Data loaders and dataset utilities",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -10,7 +10,7 @@
     "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist"
   },
   "dependencies": {
-    "@neuronline/tensor": "workspace:*"
+    "@sylphx/tensor": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
@@ -24,12 +24,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sylphxai/neuronline.git",
+    "url": "https://github.com/SylphxAI/Axon.git",
     "directory": "packages/data"
   },
-  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "homepage": "https://github.com/SylphxAI/Axon#readme",
   "bugs": {
-    "url": "https://github.com/sylphxai/neuronline/issues"
+    "url": "https://github.com/SylphxAI/Axon/issues"
   },
   "publishConfig": {
     "access": "public"

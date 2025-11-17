@@ -1,8 +1,8 @@
 {
-  "name": "@neuronline/wasm",
+  "name": "@sylphx/wasm",
   "version": "0.1.0",
   "type": "module",
-  "description": "WASM-accelerated tensor operations for NeuronLine",
+  "description": "WASM-accelerated tensor operations",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -12,12 +12,12 @@
     }
   },
   "scripts": {
-    "build:wasm": "asc assembly/index.ts --outFile build/neuronline.wasm --optimize --runtime stub",
+    "build:wasm": "asc assembly/index.ts --outFile build/axon.wasm --optimize --runtime stub",
     "build": "bun build src/index.ts --outdir dist --target node --format esm && bun run build:types",
     "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist"
   },
   "dependencies": {
-    "@neuronline/tensor": "workspace:*"
+    "@sylphx/tensor": "workspace:*"
   },
   "devDependencies": {
     "assemblyscript": "^0.27.0",
@@ -33,12 +33,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sylphxai/neuronline.git",
+    "url": "https://github.com/SylphxAI/Axon.git",
     "directory": "packages/wasm"
   },
-  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "homepage": "https://github.com/SylphxAI/Axon#readme",
   "bugs": {
-    "url": "https://github.com/sylphxai/neuronline/issues"
+    "url": "https://github.com/SylphxAI/Axon/issues"
   },
   "publishConfig": {
     "access": "public"
