@@ -5,6 +5,7 @@
 
 import type { Tensor } from './types'
 import { ones, zeros } from './creation'
+import { acquireBuffer } from './pool'
 
 /**
  * Build topological ordering of computation graph
@@ -70,10 +71,28 @@ export function backward(tensor: Tensor): Map<Tensor, Tensor> {
         const existingGrad = grads.get(input)
         if (existingGrad) {
           // Sum gradients (for nodes with multiple consumers)
-          const summedData = new Float32Array(existingGrad.data.length)
-          for (let k = 0; k < summedData.length; k++) {
+          const summedData = acquireBuffer(existingGrad.data.length)
+          const len = summedData.length
+
+          // Unroll by 8 for better performance
+          let k = 0
+          const len8 = len - 7
+          for (; k < len8; k += 8) {
+            summedData[k] = existingGrad.data[k]! + inputGrad.data[k]!
+            summedData[k + 1] = existingGrad.data[k + 1]! + inputGrad.data[k + 1]!
+            summedData[k + 2] = existingGrad.data[k + 2]! + inputGrad.data[k + 2]!
+            summedData[k + 3] = existingGrad.data[k + 3]! + inputGrad.data[k + 3]!
+            summedData[k + 4] = existingGrad.data[k + 4]! + inputGrad.data[k + 4]!
+            summedData[k + 5] = existingGrad.data[k + 5]! + inputGrad.data[k + 5]!
+            summedData[k + 6] = existingGrad.data[k + 6]! + inputGrad.data[k + 6]!
+            summedData[k + 7] = existingGrad.data[k + 7]! + inputGrad.data[k + 7]!
+          }
+
+          // Handle remainder
+          for (; k < len; k++) {
             summedData[k] = existingGrad.data[k]! + inputGrad.data[k]!
           }
+
           grads.set(input, {
             ...existingGrad,
             data: summedData,

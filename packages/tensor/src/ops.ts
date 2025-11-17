@@ -25,14 +25,18 @@ export function add(a: Tensor, b: Tensor): Tensor {
     const bData = b.data
     const len = data.length
 
-    // Unroll loop by 4 for better performance
-    const len4 = len - (len % 4)
+    // Unroll loop by 8 for better performance
+    const len8 = len - (len % 8)
     let i = 0
-    for (; i < len4; i += 4) {
+    for (; i < len8; i += 8) {
       data[i] = aData[i]! + bData[i]!
       data[i + 1] = aData[i + 1]! + bData[i + 1]!
       data[i + 2] = aData[i + 2]! + bData[i + 2]!
       data[i + 3] = aData[i + 3]! + bData[i + 3]!
+      data[i + 4] = aData[i + 4]! + bData[i + 4]!
+      data[i + 5] = aData[i + 5]! + bData[i + 5]!
+      data[i + 6] = aData[i + 6]! + bData[i + 6]!
+      data[i + 7] = aData[i + 7]! + bData[i + 7]!
     }
     // Handle remainder
     for (; i < len; i++) {
@@ -54,7 +58,24 @@ export function add(a: Tensor, b: Tensor): Tensor {
   if (b.data.length === 1) {
     const data = acquireBuffer(a.data.length)
     const bValue = b.data[0]!
-    for (let i = 0; i < data.length; i++) {
+    const len = data.length
+
+    // Unroll by 8 for better performance
+    let i = 0
+    const len8 = len - 7
+    for (; i < len8; i += 8) {
+      data[i] = a.data[i]! + bValue
+      data[i + 1] = a.data[i + 1]! + bValue
+      data[i + 2] = a.data[i + 2]! + bValue
+      data[i + 3] = a.data[i + 3]! + bValue
+      data[i + 4] = a.data[i + 4]! + bValue
+      data[i + 5] = a.data[i + 5]! + bValue
+      data[i + 6] = a.data[i + 6]! + bValue
+      data[i + 7] = a.data[i + 7]! + bValue
+    }
+
+    // Handle remainder
+    for (; i < len; i++) {
       data[i] = a.data[i]! + bValue
     }
 
@@ -79,7 +100,24 @@ export function add(a: Tensor, b: Tensor): Tensor {
   if (a.data.length === 1) {
     const data = acquireBuffer(b.data.length)
     const aValue = a.data[0]!
-    for (let i = 0; i < data.length; i++) {
+    const len = data.length
+
+    // Unroll by 8 for better performance
+    let i = 0
+    const len8 = len - 7
+    for (; i < len8; i += 8) {
+      data[i] = aValue + b.data[i]!
+      data[i + 1] = aValue + b.data[i + 1]!
+      data[i + 2] = aValue + b.data[i + 2]!
+      data[i + 3] = aValue + b.data[i + 3]!
+      data[i + 4] = aValue + b.data[i + 4]!
+      data[i + 5] = aValue + b.data[i + 5]!
+      data[i + 6] = aValue + b.data[i + 6]!
+      data[i + 7] = aValue + b.data[i + 7]!
+    }
+
+    // Handle remainder
+    for (; i < len; i++) {
       data[i] = aValue + b.data[i]!
     }
 
@@ -122,7 +160,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
           backward: (grad: Tensor) => {
             // Gradient for a: same shape as grad
             // Gradient for b: sum across rows
-            const bGrad = new Float32Array(cols!)
+            const bGrad = acquireBuffer(cols!)
             for (let i = 0; i < rows!; i++) {
               for (let j = 0; j < cols!; j++) {
                 bGrad[j] = bGrad[j]! + grad.data[i * cols! + j]!
@@ -155,7 +193,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
           name: 'add_broadcast',
           inputs: [a, b],
           backward: (grad: Tensor) => {
-            const aGrad = new Float32Array(cols!)
+            const aGrad = acquireBuffer(cols!)
             for (let i = 0; i < rows!; i++) {
               for (let j = 0; j < cols!; j++) {
                 aGrad[j] = aGrad[j]! + grad.data[i * cols! + j]!
@@ -179,8 +217,24 @@ export function add(a: Tensor, b: Tensor): Tensor {
 export function sub(a: Tensor, b: Tensor): Tensor {
   const requiresGrad = a.requiresGrad || b.requiresGrad
   const data = acquireBuffer(a.data.length)
+  const len = data.length
 
-  for (let i = 0; i < data.length; i++) {
+  // Unroll by 8 for better performance
+  let i = 0
+  const len8 = len - 7
+  for (; i < len8; i += 8) {
+    data[i] = a.data[i]! - b.data[i]!
+    data[i + 1] = a.data[i + 1]! - b.data[i + 1]!
+    data[i + 2] = a.data[i + 2]! - b.data[i + 2]!
+    data[i + 3] = a.data[i + 3]! - b.data[i + 3]!
+    data[i + 4] = a.data[i + 4]! - b.data[i + 4]!
+    data[i + 5] = a.data[i + 5]! - b.data[i + 5]!
+    data[i + 6] = a.data[i + 6]! - b.data[i + 6]!
+    data[i + 7] = a.data[i + 7]! - b.data[i + 7]!
+  }
+
+  // Handle remainder
+  for (; i < len; i++) {
     data[i] = a.data[i]! - b.data[i]!
   }
 
@@ -434,7 +488,24 @@ export function transpose(t: Tensor): Tensor {
  */
 export function sum(t: Tensor): Tensor {
   let total = 0
-  for (let i = 0; i < t.data.length; i++) {
+  const len = t.data.length
+
+  // Unroll by 8 for better performance
+  let i = 0
+  const len8 = len - 7
+  for (; i < len8; i += 8) {
+    total += t.data[i]!
+    total += t.data[i + 1]!
+    total += t.data[i + 2]!
+    total += t.data[i + 3]!
+    total += t.data[i + 4]!
+    total += t.data[i + 5]!
+    total += t.data[i + 6]!
+    total += t.data[i + 7]!
+  }
+
+  // Handle remainder
+  for (; i < len; i++) {
     total += t.data[i]!
   }
 
@@ -444,11 +515,29 @@ export function sum(t: Tensor): Tensor {
         inputs: [t],
         backward: (grad: Tensor) => {
           // Gradient broadcasts to all elements
-          const data = new Float32Array(t.data.length)
+          const data = acquireBuffer(t.data.length)
           const gradValue = grad.data[0]!
-          for (let i = 0; i < data.length; i++) {
-            data[i] = gradValue
+          const dataLen = data.length
+
+          // Unroll by 8
+          let j = 0
+          const len8 = dataLen - 7
+          for (; j < len8; j += 8) {
+            data[j] = gradValue
+            data[j + 1] = gradValue
+            data[j + 2] = gradValue
+            data[j + 3] = gradValue
+            data[j + 4] = gradValue
+            data[j + 5] = gradValue
+            data[j + 6] = gradValue
+            data[j + 7] = gradValue
           }
+
+          // Handle remainder
+          for (; j < dataLen; j++) {
+            data[j] = gradValue
+          }
+
           return [{ ...t, data }]
         },
       }
