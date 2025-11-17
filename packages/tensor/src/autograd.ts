@@ -104,6 +104,12 @@ export function backward(tensor: Tensor): Map<Tensor, Tensor> {
     }
   }
 
+  // Also set .grad property on tensors for compatibility
+  for (const [tensor, grad] of grads) {
+    // @ts-ignore - mutating for backward compatibility
+    tensor.grad = grad
+  }
+
   return grads
 }
 

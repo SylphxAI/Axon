@@ -722,3 +722,125 @@ export function clone(t: Tensor): Tensor {
     gradFn: t.gradFn,
   }
 }
+
+/**
+ * Element-wise division
+ * Pure function with autograd support
+ */
+export function div(a: Tensor, b: Tensor): Tensor {
+  const requiresGrad = a.requiresGrad || b.requiresGrad
+  const data = acquireBuffer(Math.max(a.data.length, b.data.length))
+
+  // Broadcasting support
+  if (a.shape.length === b.shape.length && a.data.length === b.data.length) {
+    const aData = a.data
+    const bData = b.data
+    const len = data.length
+
+    for (let i = 0; i < len; i++) {
+      data[i] = aData[i]! / bData[i]!
+    }
+  } else if (b.shape[0] === 1) {
+    const bValue = b.data[0]!
+    const aData = a.data
+    const len = a.data.length
+
+    for (let i = 0; i < len; i++) {
+      data[i] = aData[i]! / bValue
+    }
+  } else if (a.shape[0] === 1) {
+    const aValue = a.data[0]!
+    const bData = b.data
+    const len = b.data.length
+
+    for (let i = 0; i < len; i++) {
+      data[i] = aValue / bData[i]!
+    }
+  }
+
+  const gradFn: GradFn | undefined = requiresGrad
+    ? {
+        name: 'div',
+        inputs: [a, b],
+        backward: (grad: Tensor) => {
+          // d(a/b)/da = 1/b, d(a/b)/db = -a/b^2
+          const aGrad = div(grad, b)
+          const bGrad = mul(mul(grad, a), div(tensor([-1]), mul(b, b)))
+          return [aGrad, bGrad]
+        },
+      }
+    : undefined
+
+  return {
+    data,
+    shape: a.shape.length >= b.shape.length ? a.shape : b.shape,
+    requiresGrad,
+    gradFn,
+  }
+}
+
+/**
+ * Element-wise square root
+ * Pure function with autograd support
+ */
+export function sqrt(t: Tensor): Tensor {
+  const requiresGrad = t.requiresGrad
+  const data = acquireBuffer(t.data.length)
+  const len = data.length
+
+  for (let i = 0; i < len; i++) {
+    data[i] = Math.sqrt(t.data[i]!)
+  }
+
+  const gradFn: GradFn | undefined = requiresGrad
+    ? {
+        name: 'sqrt',
+        inputs: [t],
+        backward: (grad: Tensor) => {
+          // d(sqrt(x))/dx = 1/(2*sqrt(x))
+          const sqrtT = sqrt(t)
+          const denom = mul(tensor([2]), sqrtT)
+          return [div(grad, denom)]
+        },
+      }
+    : undefined
+
+  return {
+    data,
+    shape: t.shape,
+    requiresGrad,
+    gradFn,
+  }
+}
+
+/**
+ * Element-wise square
+ * Pure function with autograd support
+ */
+export function square(t: Tensor): Tensor {
+  const requiresGrad = t.requiresGrad
+  const data = acquireBuffer(t.data.length)
+  const len = data.length
+
+  for (let i = 0; i < len; i++) {
+    data[i] = t.data[i]! * t.data[i]!
+  }
+
+  const gradFn: GradFn | undefined = requiresGrad
+    ? {
+        name: 'square',
+        inputs: [t],
+        backward: (grad: Tensor) => {
+          // d(x^2)/dx = 2x
+          return [mul(mul(tensor([2]), t), grad)]
+        },
+      }
+    : undefined
+
+  return {
+    data,
+    shape: t.shape,
+    requiresGrad,
+    gradFn,
+  }
+}

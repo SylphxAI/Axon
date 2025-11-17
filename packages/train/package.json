@@ -1,8 +1,8 @@
 {
-  "name": "@sylphx/optim",
+  "name": "@sylphx/train",
   "version": "0.1.0",
   "type": "module",
-  "description": "Pure functional optimizers (SGD, Adam, RMSprop, AdaGrad)",
+  "description": "Training utilities for Axon",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,8 +13,7 @@
   },
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target node --format esm && bun run build:types",
-    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
-    "test": "bun test"
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist"
   },
   "dependencies": {
     "@sylphx/tensor": "workspace:*"
@@ -23,17 +22,16 @@
     "typescript": "^5.7.3"
   },
   "keywords": [
-    "optimizer",
-    "sgd",
-    "adam",
-    "pure-functions"
+    "training",
+    "machine-learning",
+    "neural-network"
   ],
   "author": "SylphxAI",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/SylphxAI/Axon.git",
-    "directory": "packages/optim"
+    "directory": "packages/train"
   },
   "homepage": "https://github.com/SylphxAI/Axon#readme",
   "bugs": {

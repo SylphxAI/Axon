@@ -1,43 +1,15 @@
 /**
  * @sylphx/nn
  * Pure functional neural network layers
+ *
+ * All layers follow the pattern: { init, forward }
+ * - init() returns initial state
+ * - forward(input, state) transforms input
+ *
+ * No classes, no mutation, just pure functions!
  */
 
-export * as linear from './linear'
-export type { LinearState } from './linear'
-
-// Conv2D
-export * as conv2d from './conv2d'
-export type { Conv2DState } from './conv2d'
-
-// Dropout
-export type { DropoutConfig } from './dropout'
-export * as dropout from './dropout'
-
-// BatchNorm
-export type { BatchNormState } from './batchnorm'
-export * as batchnorm from './batchnorm'
-
-// LSTM
-export type { LSTMState, LSTMHidden } from './lstm'
-export * as lstm from './lstm'
-
-// GRU
-export type { GRUState, GRUHidden } from './gru'
-export * as gru from './gru'
-
-// Serialization
-export type {
-  SerializedModel,
-  SerializedLayer,
-  SerializedParam,
-} from './serialization'
-export {
-  serializeTensor,
-  deserializeTensor,
-  saveModel,
-  loadModel,
-  saveModelToFile,
-  loadModelFromFile,
-  getModelSummary,
-} from './serialization'
+export * from './types'
+export * from './linear-new'
+export * from './activations'
+export * from './sequential'

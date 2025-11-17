@@ -102,6 +102,16 @@
         "@sylphx/webgpu": "workspace:*",
       },
     },
+    "packages/train": {
+      "name": "@sylphx/train",
+      "version": "0.1.0",
+      "dependencies": {
+        "@sylphx/tensor": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.7.3",
+      },
+    },
     "packages/wasm": {
       "name": "@sylphx/wasm",
       "version": "0.1.0",
@@ -364,6 +374,8 @@
     "@sylphx/predictors": ["@sylphx/predictors@workspace:packages/predictors"],
 
     "@sylphx/tensor": ["@sylphx/tensor@workspace:packages/tensor"],
+
+    "@sylphx/train": ["@sylphx/train@workspace:packages/train"],
 
     "@sylphx/wasm": ["@sylphx/wasm@workspace:packages/wasm"],
 

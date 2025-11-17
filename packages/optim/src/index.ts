@@ -1,23 +1,11 @@
 /**
  * @sylphx/optim
- * Pure functional optimizers for neural networks
+ * Pure functional optimizers
+ *
+ * All optimizers follow the pattern: { init, step }
+ * - init(params) returns initial state
+ * - step(params, grads, state) returns new params and state
  */
 
-// Types
-export type { OptimizerState, OptimizerConfig, UpdateResult } from './types'
-
-// SGD
-export type { SGDConfig } from './sgd'
-export * as sgd from './sgd'
-
-// Adam
-export type { AdamConfig } from './adam'
-export * as adam from './adam'
-
-// RMSprop
-export type { RMSpropConfig } from './rmsprop'
-export * as rmsprop from './rmsprop'
-
-// AdaGrad
-export type { AdaGradConfig } from './adagrad'
-export * as adagrad from './adagrad'
+export * from './types'
+export * from './adam-new'

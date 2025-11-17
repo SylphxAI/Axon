@@ -1,32 +1,25 @@
 /**
- * Pure functional optimizer types
- * PyTorch-like API but with pure functions
+ * Pure Functional Optimizer API (v2)
  */
 
 import type { Tensor } from '@sylphx/tensor'
 
 /**
- * Optimizer state (immutable)
- * Contains internal state for optimizers (momentum, adaptive learning rates, etc.)
+ * Optimizer interface
+ * An optimizer is a pair of pure functions
  */
-export type OptimizerState = {
-  readonly step: number
-  readonly params: readonly Tensor[]
-  readonly state: Record<string, unknown>
-}
+export type Optimizer<State = any> = {
+  /**
+   * Initialize optimizer state
+   */
+  init: (params: Tensor[]) => State
 
-/**
- * Optimizer configuration
- */
-export type OptimizerConfig = {
-  readonly lr: number // Learning rate
-  readonly [key: string]: unknown // Optimizer-specific config
-}
-
-/**
- * Update result from optimizer
- */
-export type UpdateResult = {
-  readonly params: readonly Tensor[]
-  readonly state: OptimizerState
+  /**
+   * Perform optimization step
+   * Returns new parameters and new optimizer state
+   */
+  step: (params: Tensor[], grads: Tensor[], state: State) => {
+    params: Tensor[]
+    state: State
+  }
 }
