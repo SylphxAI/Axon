@@ -5,6 +5,74 @@ All notable changes to NeuronLine will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2024-11-17
+
+### Added
+- **Memory pooling system** (`@neuronline/tensor`)
+  - TensorPool class for Float32Array buffer reuse
+  - `withScope()` API for automatic lifecycle management
+  - Integrated into all tensor operations (add, sub, mul, matmul, transpose)
+  - Limits allocations to maxPoolSize (100 per buffer size)
+  - Reduces GC pressure by 90%+ in training loops
+  - Test verified: 1000 ops without scope = 1000 buffers, with scope = 1 buffer
+
+- **Comprehensive test suite**
+  - 64 tests passing, 2 skipped (WASM integration pending)
+  - 135 assertions across 8 test files
+  - Coverage: tensors, autograd, operations, layers, optimizers, memory pooling
+  - Broadcasting tests, gradient flow verification
+  - Linear layer tests (forward/backward pass)
+  - SGD optimizer tests with floating point precision fixes
+
+- **Internal documentation** (`.sylphx/` workspace)
+  - context.md: Project scope, constraints, boundaries
+  - architecture.md: System design, components, patterns
+  - glossary.md: Project-specific terminology
+  - decisions/: 4 Architecture Decision Records
+    - ADR-001: Pure Functional Architecture
+    - ADR-002: Tiled Matrix Multiplication
+    - ADR-003: WASM/WebGPU as Optional Packages
+    - ADR-004: Memory Pooling with Scope-Based Lifetime Management
+  - All with SSOT references and VERIFY markers
+
+- **CI/CD automation**
+  - GitHub Actions workflow for automated testing on push/PRs
+  - GitHub Actions workflow for npm publishing on version tags
+  - Uses Bun for fast builds and tests
+  - Automated testing, building, and publishing pipeline
+
+- **npm publishing preparation**
+  - Added repository, homepage, bugs fields to all packages
+  - PublishConfig with public access for scoped packages
+  - Comprehensive READMEs for all @neuronline packages:
+    - @neuronline/tensor: API reference, memory pooling guide
+    - @neuronline/nn: Layer documentation with examples
+    - @neuronline/optim: Optimizer algorithms (SGD, Adam)
+    - @neuronline/functional: Activation and loss functions
+    - @neuronline/data: DataLoader and dataset utilities
+
+- **Universal WASM loader**
+  - Inline base64-encoded WASM (1.4KB)
+  - Works in all environments (Node/Browser/Deno/Bun)
+  - No file I/O required
+  - 5/7 tests passing (operations need AssemblyScript loader)
+  - Bundle: 2.99KB (includes inline WASM)
+
+### Changed
+- Extended memory pooling from just matmul to all tensor operations
+- Fixed TypeScript errors with possibly undefined values in ops.ts
+- Fixed floating point precision issues in tests using `toBeCloseTo()`
+- Removed unused imports and variables across packages
+
+### Performance
+- Memory pooling reduces allocations by 90%+ in training loops
+- Same performance as 0.1.2: 4.10-4.19 episodes/sec on 2048 DQN
+
+### Fixed
+- TypeScript build configuration with `noEmit: false` for type declarations
+- Floating point comparison issues in optimizer tests
+- Unused variable warnings across multiple packages
+
 ## [0.1.2] - 2024-11-17
 
 ### Added
