@@ -1,32 +1,37 @@
 /**
  * DQN Agent for 2048
- * Pure functional implementation
+ * Pure functional implementation with new API
  */
 
 import * as T from '../../../packages/tensor/src/index'
 import * as F from '../../../packages/functional/src/index'
-import * as nn from '../../../packages/nn/src/index'
-import * as optim from '../../../packages/optim/src/index'
+import { Linear, ReLU, Sequential } from '../../../packages/nn/src/index'
+import { Adam } from '../../../packages/optim/src/index'
+import { getParams, trainStep } from '../../../packages/train/src/index'
 import type { GameState, Direction } from './game'
 import { gridToArray } from './game'
 
 /**
- * Neural network model for Q-learning
+ * Q-Network model
  * Input: 16 (flattened 4x4 grid)
  * Output: 4 (Q-values for up, down, left, right)
  */
-export type QNetwork = {
-  linear1: nn.LinearState
-  linear2: nn.LinearState
-  linear3: nn.LinearState
-}
+const createQNetwork = () => Sequential(
+  Linear(16, 64),
+  ReLU(),
+  Linear(64, 64),
+  ReLU(),
+  Linear(64, 4)
+)
 
 /**
  * Agent state
  */
 export type AgentState = {
-  network: QNetwork
-  optimizer: optim.OptimizerState
+  model: ReturnType<typeof createQNetwork>
+  modelState: any
+  optimizer: ReturnType<typeof Adam>
+  optState: any
   epsilon: number // Exploration rate
   totalReward: number
   gamesPlayed: number
@@ -44,40 +49,19 @@ export type Experience = {
 }
 
 /**
- * Initialize Q-network
- */
-export function initNetwork(): QNetwork {
-  return {
-    linear1: nn.linear.init(16, 64),
-    linear2: nn.linear.init(64, 64),
-    linear3: nn.linear.init(64, 4),
-  }
-}
-
-/**
- * Forward pass through network
- */
-export function forward(state: number[], network: QNetwork): T.Tensor {
-  const input = T.tensor([state], { requiresGrad: false })
-  let h = nn.linear.forward(input, network.linear1)
-  h = F.relu(h)
-  h = nn.linear.forward(h, network.linear2)
-  h = F.relu(h)
-  h = nn.linear.forward(h, network.linear3)
-  return h
-}
-
-/**
  * Initialize agent
  */
 export function initAgent(): AgentState {
-  const network = initNetwork()
-  const params = getNetworkParams(network)
-  const optimizer = optim.adam.init(params, { lr: 0.001 })
+  const model = createQNetwork()
+  const modelState = model.init()
+  const optimizer = Adam({ lr: 0.001 })
+  const optState = optimizer.init(getParams(modelState))
 
   return {
-    network,
+    model,
+    modelState,
     optimizer,
+    optState,
     epsilon: 1.0, // Start with full exploration
     totalReward: 0,
     gamesPlayed: 0,
@@ -85,17 +69,11 @@ export function initAgent(): AgentState {
 }
 
 /**
- * Get all network parameters
+ * Forward pass through network
  */
-function getNetworkParams(network: QNetwork): T.Tensor[] {
-  return [
-    network.linear1.weight,
-    network.linear1.bias,
-    network.linear2.weight,
-    network.linear2.bias,
-    network.linear3.weight,
-    network.linear3.bias,
-  ]
+function forward(state: number[], agent: AgentState): T.Tensor {
+  const input = T.tensor([state], { requiresGrad: false })
+  return agent.model.forward(input, agent.modelState)
 }
 
 /**
@@ -114,7 +92,7 @@ export function selectAction(
   }
 
   // Exploit: best action according to Q-network
-  const qValues = forward(state, agent.network)
+  const qValues = forward(state, agent)
   const qArray = T.toArray(qValues)[0] as number[]
 
   // Map directions to indices
@@ -135,8 +113,7 @@ export function selectAction(
 }
 
 /**
- * Train on a batch of experiences (batched version - uses WASM for large batches)
- * Processes all experiences together for better performance
+ * Train on a batch of experiences
  */
 export function train(
   agent: AgentState,
@@ -147,7 +124,7 @@ export function train(
 
   const batchSize = experiences.length
 
-  // Prepare batched states: [batchSize, stateSize]
+  // Prepare batched states
   const states: number[][] = []
   const nextStates: number[][] = []
   const actions: number[] = []
@@ -162,14 +139,13 @@ export function train(
     dones.push(exp.done)
   }
 
-  // Batched forward pass: [batchSize, 16] → [batchSize, 4]
-  // For batch size 32: [32, 16] @ [16, 64] → [32, 64] (2048 elements) - WASM activates!
+  // Forward pass for current states
   const statesTensor = T.tensor(states, { requiresGrad: true })
-  const qValuesBatch = forwardBatch(statesTensor, agent.network)
+  const qValuesBatch = agent.model.forward(statesTensor, agent.modelState)
 
-  // Compute target Q-values
+  // Forward pass for next states (no grad)
   const nextStatesTensor = T.tensor(nextStates, { requiresGrad: false })
-  const nextQValuesBatch = forwardBatch(nextStatesTensor, agent.network)
+  const nextQValuesBatch = agent.model.forward(nextStatesTensor, agent.modelState)
   const nextQArray = T.toArray(nextQValuesBatch)
 
   // Build target tensor
@@ -194,50 +170,22 @@ export function train(
 
   const target = T.tensor(targetArray, { requiresGrad: false })
 
-  // Compute loss for entire batch
-  const loss = F.mse(qValuesBatch, target)
-
-  // Backward pass
-  const grads = T.backward(loss)
-
-  // Update network
-  const result = optim.adam.step(agent.optimizer, getNetworkParams(agent.network), grads)
-
-  // Rebuild network with new parameters
-  const newNetwork: QNetwork = {
-    linear1: {
-      weight: result.params[0]!,
-      bias: result.params[1]!,
-    },
-    linear2: {
-      weight: result.params[2]!,
-      bias: result.params[3]!,
-    },
-    linear3: {
-      weight: result.params[4]!,
-      bias: result.params[5]!,
-    },
-  }
+  // Train step using new API
+  const result = trainStep({
+    model: agent.model,
+    modelState: agent.modelState,
+    optimizer: agent.optimizer,
+    optState: agent.optState,
+    input: statesTensor,
+    target: target,
+    lossFn: F.mse
+  })
 
   return {
     ...agent,
-    network: newNetwork,
-    optimizer: result.state,
+    modelState: result.modelState,
+    optState: result.optState,
   }
-}
-
-/**
- * Batched forward pass through network
- * Input: [batchSize, inputSize]
- * Output: [batchSize, outputSize]
- */
-function forwardBatch(stateBatch: T.Tensor, network: QNetwork): T.Tensor {
-  let h = nn.linear.forward(stateBatch, network.linear1)
-  h = F.relu(h)
-  h = nn.linear.forward(h, network.linear2)
-  h = F.relu(h)
-  h = nn.linear.forward(h, network.linear3)
-  return h
 }
 
 /**
