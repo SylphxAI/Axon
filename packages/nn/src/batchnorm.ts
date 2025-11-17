@@ -95,10 +95,29 @@ function calculateMean(input: Tensor): Tensor {
   const numFeatures = input.data.length / numSamples
 
   const mean = acquireBuffer(numFeatures)
+  const invNumSamples = 1.0 / numSamples
 
+  // Loop unrolling for better performance
   for (let i = 0; i < numSamples; i++) {
-    for (let j = 0; j < numFeatures; j++) {
-      mean[j] = mean[j]! + input.data[i * numFeatures + j]! / numSamples
+    const rowOffset = i * numFeatures
+
+    // Unroll by 8 for better ILP
+    let j = 0
+    const numFeatures8 = numFeatures - 7
+    for (; j < numFeatures8; j += 8) {
+      mean[j] = mean[j]! + input.data[rowOffset + j]! * invNumSamples
+      mean[j + 1] = mean[j + 1]! + input.data[rowOffset + j + 1]! * invNumSamples
+      mean[j + 2] = mean[j + 2]! + input.data[rowOffset + j + 2]! * invNumSamples
+      mean[j + 3] = mean[j + 3]! + input.data[rowOffset + j + 3]! * invNumSamples
+      mean[j + 4] = mean[j + 4]! + input.data[rowOffset + j + 4]! * invNumSamples
+      mean[j + 5] = mean[j + 5]! + input.data[rowOffset + j + 5]! * invNumSamples
+      mean[j + 6] = mean[j + 6]! + input.data[rowOffset + j + 6]! * invNumSamples
+      mean[j + 7] = mean[j + 7]! + input.data[rowOffset + j + 7]! * invNumSamples
+    }
+
+    // Handle remainder
+    for (; j < numFeatures; j++) {
+      mean[j] = mean[j]! + input.data[rowOffset + j]! * invNumSamples
     }
   }
 
@@ -112,13 +131,41 @@ function calculateMean(input: Tensor): Tensor {
 function calculateVariance(input: Tensor, mean: Tensor): Tensor {
   const numSamples = input.shape[0]!
   const numFeatures = mean.data.length
+  const invNumSamples = 1.0 / numSamples
 
   const variance = acquireBuffer(numFeatures)
 
+  // Loop unrolling for better performance
   for (let i = 0; i < numSamples; i++) {
-    for (let j = 0; j < numFeatures; j++) {
-      const diff = input.data[i * numFeatures + j]! - mean.data[j]!
-      variance[j] = variance[j]! + (diff * diff) / numSamples
+    const rowOffset = i * numFeatures
+
+    // Unroll by 8 for better ILP
+    let j = 0
+    const numFeatures8 = numFeatures - 7
+    for (; j < numFeatures8; j += 8) {
+      const diff0 = input.data[rowOffset + j]! - mean.data[j]!
+      const diff1 = input.data[rowOffset + j + 1]! - mean.data[j + 1]!
+      const diff2 = input.data[rowOffset + j + 2]! - mean.data[j + 2]!
+      const diff3 = input.data[rowOffset + j + 3]! - mean.data[j + 3]!
+      const diff4 = input.data[rowOffset + j + 4]! - mean.data[j + 4]!
+      const diff5 = input.data[rowOffset + j + 5]! - mean.data[j + 5]!
+      const diff6 = input.data[rowOffset + j + 6]! - mean.data[j + 6]!
+      const diff7 = input.data[rowOffset + j + 7]! - mean.data[j + 7]!
+
+      variance[j] = variance[j]! + diff0 * diff0 * invNumSamples
+      variance[j + 1] = variance[j + 1]! + diff1 * diff1 * invNumSamples
+      variance[j + 2] = variance[j + 2]! + diff2 * diff2 * invNumSamples
+      variance[j + 3] = variance[j + 3]! + diff3 * diff3 * invNumSamples
+      variance[j + 4] = variance[j + 4]! + diff4 * diff4 * invNumSamples
+      variance[j + 5] = variance[j + 5]! + diff5 * diff5 * invNumSamples
+      variance[j + 6] = variance[j + 6]! + diff6 * diff6 * invNumSamples
+      variance[j + 7] = variance[j + 7]! + diff7 * diff7 * invNumSamples
+    }
+
+    // Handle remainder
+    for (; j < numFeatures; j++) {
+      const diff = input.data[rowOffset + j]! - mean.data[j]!
+      variance[j] = variance[j]! + diff * diff * invNumSamples
     }
   }
 
@@ -140,12 +187,33 @@ function normalize(
 
   const normalized = acquireBuffer(input.data.length)
 
+  // Pre-compute inverse standard deviations for better performance
+  const invStd = acquireBuffer(numFeatures)
+  for (let j = 0; j < numFeatures; j++) {
+    invStd[j] = 1.0 / Math.sqrt(variance.data[j]! + epsilon)
+  }
+
+  // Loop unrolling for better performance
   for (let i = 0; i < numSamples; i++) {
-    for (let j = 0; j < numFeatures; j++) {
-      const idx = i * numFeatures + j
-      normalized[idx] =
-        (input.data[idx]! - mean.data[j]!) /
-        Math.sqrt(variance.data[j]! + epsilon)
+    const rowOffset = i * numFeatures
+
+    // Unroll by 8 for better ILP
+    let j = 0
+    const numFeatures8 = numFeatures - 7
+    for (; j < numFeatures8; j += 8) {
+      normalized[rowOffset + j] = (input.data[rowOffset + j]! - mean.data[j]!) * invStd[j]!
+      normalized[rowOffset + j + 1] = (input.data[rowOffset + j + 1]! - mean.data[j + 1]!) * invStd[j + 1]!
+      normalized[rowOffset + j + 2] = (input.data[rowOffset + j + 2]! - mean.data[j + 2]!) * invStd[j + 2]!
+      normalized[rowOffset + j + 3] = (input.data[rowOffset + j + 3]! - mean.data[j + 3]!) * invStd[j + 3]!
+      normalized[rowOffset + j + 4] = (input.data[rowOffset + j + 4]! - mean.data[j + 4]!) * invStd[j + 4]!
+      normalized[rowOffset + j + 5] = (input.data[rowOffset + j + 5]! - mean.data[j + 5]!) * invStd[j + 5]!
+      normalized[rowOffset + j + 6] = (input.data[rowOffset + j + 6]! - mean.data[j + 6]!) * invStd[j + 6]!
+      normalized[rowOffset + j + 7] = (input.data[rowOffset + j + 7]! - mean.data[j + 7]!) * invStd[j + 7]!
+    }
+
+    // Handle remainder
+    for (; j < numFeatures; j++) {
+      normalized[rowOffset + j] = (input.data[rowOffset + j]! - mean.data[j]!) * invStd[j]!
     }
   }
 

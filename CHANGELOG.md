@@ -24,6 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `gpu-vs-wasm-bench.ts`: Comprehensive benchmark comparing WASM vs WebGPU
   - `webgpu-async-demo.ts`: Shows async GPU API usage patterns
 
+### Performance
+- **BatchNorm optimization** (`@neuronline/nn`)
+  - 8x loop unrolling in calculateMean, calculateVariance, normalize
+  - Pre-computed inverse standard deviations (avoid repeated sqrt/division)
+  - Pre-computed row offsets for better memory access patterns
+  - Pre-computed inverse of numSamples (replace division with multiplication)
+  - Estimated 20-30% speedup for networks using BatchNorm
+
 ### Changed
 - WebGPU package no longer depends on tensor (removes circular dependency)
 - Updated exports in `@neuronline/tensor` to include GPU functions
@@ -34,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Separate async API preserves existing synchronous workflow
 - GPU overhead makes it suitable only for very large operations
 - WASM remains the primary acceleration for typical workloads
+- BatchNorm optimizations follow same patterns as other optimized operations
 
 ### Documentation
 - Updated PERFORMANCE.md with acceleration strategy guide
