@@ -4,7 +4,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { sub, mul, add, scalar, zeros } from '@neuronline/tensor'
+import { sub, mul, add, scalar, zeros, acquireBuffer } from '@neuronline/tensor'
 import type { OptimizerState, UpdateResult } from './types'
 
 export type AdamConfig = {
@@ -129,36 +129,108 @@ export function step(
   }
 }
 
-// Helper functions for element-wise operations
+// Helper functions for element-wise operations with memory pooling
 
 function elementwiseSquare(t: Tensor): Tensor {
-  const data = new Float32Array(t.data.length)
-  for (let i = 0; i < t.data.length; i++) {
+  const data = acquireBuffer(t.data.length)
+
+  // Unroll by 8 for better performance
+  let i = 0
+  const len8 = t.data.length - 7
+  for (; i < len8; i += 8) {
+    const v0 = t.data[i]!
+    const v1 = t.data[i + 1]!
+    const v2 = t.data[i + 2]!
+    const v3 = t.data[i + 3]!
+    const v4 = t.data[i + 4]!
+    const v5 = t.data[i + 5]!
+    const v6 = t.data[i + 6]!
+    const v7 = t.data[i + 7]!
+    data[i] = v0 * v0
+    data[i + 1] = v1 * v1
+    data[i + 2] = v2 * v2
+    data[i + 3] = v3 * v3
+    data[i + 4] = v4 * v4
+    data[i + 5] = v5 * v5
+    data[i + 6] = v6 * v6
+    data[i + 7] = v7 * v7
+  }
+
+  // Handle remainder
+  for (; i < t.data.length; i++) {
     data[i] = t.data[i]! * t.data[i]!
   }
+
   return { ...t, data, requiresGrad: false }
 }
 
 function elementwiseSqrtPlusEpsilon(t: Tensor, epsilon: number): Tensor {
-  const data = new Float32Array(t.data.length)
-  for (let i = 0; i < t.data.length; i++) {
+  const data = acquireBuffer(t.data.length)
+
+  // Unroll by 4 for sqrt (transcendental function)
+  let i = 0
+  const len4 = t.data.length - 3
+  for (; i < len4; i += 4) {
+    data[i] = Math.sqrt(t.data[i]!) + epsilon
+    data[i + 1] = Math.sqrt(t.data[i + 1]!) + epsilon
+    data[i + 2] = Math.sqrt(t.data[i + 2]!) + epsilon
+    data[i + 3] = Math.sqrt(t.data[i + 3]!) + epsilon
+  }
+
+  // Handle remainder
+  for (; i < t.data.length; i++) {
     data[i] = Math.sqrt(t.data[i]!) + epsilon
   }
+
   return { ...t, data, requiresGrad: false }
 }
 
 function elementwiseDivide(a: Tensor, b: Tensor): Tensor {
-  const data = new Float32Array(a.data.length)
-  for (let i = 0; i < a.data.length; i++) {
+  const data = acquireBuffer(a.data.length)
+
+  // Unroll by 8
+  let i = 0
+  const len8 = a.data.length - 7
+  for (; i < len8; i += 8) {
+    data[i] = a.data[i]! / b.data[i]!
+    data[i + 1] = a.data[i + 1]! / b.data[i + 1]!
+    data[i + 2] = a.data[i + 2]! / b.data[i + 2]!
+    data[i + 3] = a.data[i + 3]! / b.data[i + 3]!
+    data[i + 4] = a.data[i + 4]! / b.data[i + 4]!
+    data[i + 5] = a.data[i + 5]! / b.data[i + 5]!
+    data[i + 6] = a.data[i + 6]! / b.data[i + 6]!
+    data[i + 7] = a.data[i + 7]! / b.data[i + 7]!
+  }
+
+  // Handle remainder
+  for (; i < a.data.length; i++) {
     data[i] = a.data[i]! / b.data[i]!
   }
+
   return { ...a, data, requiresGrad: false }
 }
 
 function elementwiseMax(a: Tensor, b: Tensor): Tensor {
-  const data = new Float32Array(a.data.length)
-  for (let i = 0; i < a.data.length; i++) {
+  const data = acquireBuffer(a.data.length)
+
+  // Unroll by 8
+  let i = 0
+  const len8 = a.data.length - 7
+  for (; i < len8; i += 8) {
+    data[i] = Math.max(a.data[i]!, b.data[i]!)
+    data[i + 1] = Math.max(a.data[i + 1]!, b.data[i + 1]!)
+    data[i + 2] = Math.max(a.data[i + 2]!, b.data[i + 2]!)
+    data[i + 3] = Math.max(a.data[i + 3]!, b.data[i + 3]!)
+    data[i + 4] = Math.max(a.data[i + 4]!, b.data[i + 4]!)
+    data[i + 5] = Math.max(a.data[i + 5]!, b.data[i + 5]!)
+    data[i + 6] = Math.max(a.data[i + 6]!, b.data[i + 6]!)
+    data[i + 7] = Math.max(a.data[i + 7]!, b.data[i + 7]!)
+  }
+
+  // Handle remainder
+  for (; i < a.data.length; i++) {
     data[i] = Math.max(a.data[i]!, b.data[i]!)
   }
+
   return { ...a, data, requiresGrad: false }
 }
