@@ -14,5 +14,25 @@
   "devDependencies": {
     "assemblyscript": "^0.27.0",
     "typescript": "^5.7.3"
+  },
+  "keywords": [
+    "wasm",
+    "webassembly",
+    "acceleration",
+    "tensor-operations"
+  ],
+  "author": "SylphxAI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sylphxai/neuronline.git",
+    "directory": "packages/wasm"
+  },
+  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "bugs": {
+    "url": "https://github.com/sylphxai/neuronline/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

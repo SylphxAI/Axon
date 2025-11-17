@@ -38,6 +38,18 @@
   "keywords": ["prediction", "click-prediction", "behavior-prediction"],
   "author": "SylphxAI",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sylphxai/neuronline.git",
+    "directory": "packages/predictors"
+  },
+  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "bugs": {
+    "url": "https://github.com/sylphxai/neuronline/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@sylphx/neuronline-core": "workspace:*"
   },

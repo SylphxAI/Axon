@@ -26,5 +26,17 @@
     "pure-functions"
   ],
   "author": "SylphxAI",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sylphxai/neuronline.git",
+    "directory": "packages/nn"
+  },
+  "homepage": "https://github.com/sylphxai/neuronline#readme",
+  "bugs": {
+    "url": "https://github.com/sylphxai/neuronline/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
