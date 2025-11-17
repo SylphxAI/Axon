@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { mul, scalar } from '@neuronline/tensor'
+import { mul } from '@neuronline/tensor'
 
 /**
  * Dropout configuration

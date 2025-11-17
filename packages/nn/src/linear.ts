@@ -59,7 +59,7 @@ export function parameters(state: LinearState): Tensor[] {
  * Pure function - returns new state
  */
 export function updateWeights(
-  state: LinearState,
+  _state: LinearState,
   newWeight: Tensor,
   newBias: Tensor
 ): LinearState {

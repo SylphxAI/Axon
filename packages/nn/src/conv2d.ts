@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { heNormal, uniform, zeros, matmul, add } from '@neuronline/tensor'
+import { heNormal, uniform, matmul } from '@neuronline/tensor'
 
 /**
  * Conv2D layer state
@@ -65,7 +65,6 @@ export function forward(
 
   // Extract kernel dimensions from weight shape
   // Weight shape: [outChannels, inChannels * kH * kW]
-  const outChannels = weight.shape[0]!
   const kernelSize = Math.sqrt(weight.shape[1]! / inChannels)
   const kH = kernelSize
   const kW = kernelSize

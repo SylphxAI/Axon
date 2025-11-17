@@ -4,6 +4,7 @@
 
 import type { Tensor, GradFn } from './types'
 import { tensor } from './creation'
+import { acquireBuffer } from './pool'
 
 /**
  * Element-wise addition with broadcasting
@@ -313,7 +314,7 @@ export function matmul(a: Tensor, b: Tensor): Tensor {
   }
 
   const requiresGrad = a.requiresGrad || b.requiresGrad
-  const data = new Float32Array(aRows! * bCols!)
+  const data = acquireBuffer(aRows! * bCols!)
 
   // Highly optimized matrix multiplication with tiling
   const rows = aRows!
@@ -341,7 +342,7 @@ export function matmul(a: Tensor, b: Tensor): Tensor {
           const outRowOffset = i * cols
 
           for (let j = jj; j < jMax; j++) {
-            let sum = data[outRowOffset + j]
+            let sum = data[outRowOffset + j]!
 
             // Unroll by 4 for better ILP
             let k = kk

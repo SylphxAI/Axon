@@ -69,8 +69,8 @@ function reshape2D(data: number[], shape: number[]): number[][] {
   const [rows, cols] = shape
   const result: number[][] = []
 
-  for (let i = 0; i < rows; i++) {
-    result.push(data.slice(i * cols, (i + 1) * cols))
+  for (let i = 0; i < rows!; i++) {
+    result.push(data.slice(i * cols!, (i + 1) * cols!))
   }
 
   return result

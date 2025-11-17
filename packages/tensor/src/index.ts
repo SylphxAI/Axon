@@ -37,3 +37,13 @@ export {
 
 // Autograd
 export { backward, zeroGrad, detach, requiresGrad } from './autograd'
+
+// Memory management
+export {
+  acquireBuffer,
+  releaseBuffer,
+  clearPool,
+  poolStats,
+  setPoolingEnabled,
+  withScope,
+} from './pool'
