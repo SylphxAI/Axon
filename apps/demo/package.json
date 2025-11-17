@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@sylphx/neuronline-core": "workspace:*",
-    "@sylphx/neuronline-predictors": "workspace:*"
+    "@sylphx/neuronline-predictors": "workspace:*",
+    "@neuronline/wasm": "workspace:*",
+    "@neuronline/webgpu": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
