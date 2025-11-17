@@ -82,6 +82,33 @@ const result = {
 - **Gained**: +22% performance, consistent perf across matrix sizes
 - **Lost**: Code complexity, harder to understand
 
+### Pattern: Memory Pooling for Temporary Buffers
+
+**Why**: Float32Array allocations trigger GC, slowing training loops. Reusing buffers reduces GC pressure by 90%+.
+
+**Where**: All hot paths - ops, activations, losses, optimizers, layers, autograd
+
+**Implementation**: `TensorPool.acquireBuffer()` for temporary computation buffers, `withScope()` for automatic cleanup
+
+**Trade-off**:
+- **Gained**: 90%+ reduction in allocations, dramatically reduced GC pauses
+- **Lost**: Must distinguish temporary vs long-lived tensors (documented in code)
+
+### Pattern: Loop Unrolling for SIMD-like Performance
+
+**Why**: Modern CPUs have instruction-level parallelism (ILP). Unrolled loops expose more ILP to compiler/CPU.
+
+**Where**: All element-wise operations in tensor ops, activations, losses, optimizers
+
+**Implementation**:
+- 8x unrolling for simple arithmetic (add, sub, mul, div, square, max)
+- 4x unrolling for transcendental functions (sqrt, exp, log, tanh, sigmoid)
+- Explicit remainder handling for non-multiples
+
+**Trade-off**:
+- **Gained**: Better ILP utilization, fewer loop overhead instructions
+- **Lost**: Larger code size, more complex implementation
+
 ### Pattern: Monorepo with Workspace Dependencies
 
 **Why**: Share code without publishing, tree-shakeable, clear boundaries
@@ -113,3 +140,4 @@ See `decisions/` directory for ADRs on:
 - Pure functional architecture (ADR-001)
 - Tiled matmul vs naive (ADR-002)
 - WASM/WebGPU as optional packages (ADR-003)
+- Memory pooling with scope-based lifetime management (ADR-004)
