@@ -33,6 +33,7 @@ export {
   item,
   toArray,
   clone,
+  loadAcceleration,
 } from './ops'
 
 // Autograd

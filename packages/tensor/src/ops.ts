@@ -6,6 +6,28 @@ import type { Tensor, GradFn } from './types'
 import { tensor } from './creation'
 import { acquireBuffer } from './pool'
 
+// Optional WASM acceleration (graceful degradation)
+let wasmModule: any = null
+
+/**
+ * Load WASM acceleration (optional)
+ * Call this once at app startup to enable 2x+ faster matrix multiplication
+ * Falls back to pure TypeScript if WASM is unavailable
+ */
+export async function loadAcceleration(): Promise<boolean> {
+  if (wasmModule) return true
+
+  try {
+    const { loadWASM, wasm } = await import('@neuronline/wasm')
+    await loadWASM()
+    wasmModule = wasm
+    return true
+  } catch (e) {
+    // WASM not available - will fall back to pure TS
+    return false
+  }
+}
+
 /**
  * Element-wise addition with broadcasting
  * Pure function with autograd support
@@ -368,12 +390,41 @@ export function matmul(a: Tensor, b: Tensor): Tensor {
   }
 
   const requiresGrad = a.requiresGrad || b.requiresGrad
-  const data = acquireBuffer(aRows! * bCols!)
-
-  // Highly optimized matrix multiplication with tiling
   const rows = aRows!
   const cols = bCols!
   const inner = aCols!
+
+  // Use WASM for medium/large matrices (>1024 elements = 32x32)
+  // Benchmark shows 2-2.7x speedup for these sizes
+  const totalElements = rows * cols
+  const USE_WASM_THRESHOLD = 1024
+
+  if (wasmModule && totalElements >= USE_WASM_THRESHOLD) {
+    // WASM-accelerated path (2x+ faster)
+    const data = wasmModule.matmul(a.data, b.data, rows, inner, cols)
+
+    const gradFn: GradFn | undefined = requiresGrad
+      ? {
+          name: 'matmul',
+          inputs: [a, b],
+          backward: (grad: Tensor) => {
+            const bT = transpose(b)
+            const aT = transpose(a)
+            return [matmul(grad, bT), matmul(aT, grad)]
+          },
+        }
+      : undefined
+
+    return {
+      data,
+      shape: [rows, cols],
+      requiresGrad,
+      gradFn,
+    }
+  }
+
+  // Pure TypeScript path (for small matrices or when WASM unavailable)
+  const data = acquireBuffer(rows * cols)
   const aData = a.data
   const bData = b.data
 

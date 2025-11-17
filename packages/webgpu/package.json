@@ -4,8 +4,16 @@
   "type": "module",
   "description": "WebGPU-accelerated tensor operations for NeuronLine",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node --format esm"
+    "build": "bun build src/index.ts --outdir dist --target node --format esm && bun run build:types",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist"
   },
   "dependencies": {
     "@neuronline/tensor": "workspace:*"
