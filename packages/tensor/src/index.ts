@@ -59,7 +59,7 @@ export {
 // Provides 2-2.7x speedup for matrix operations
 // Falls back silently to pure TypeScript if unavailable
 import { loadAcceleration } from './ops'
-loadAcceleration().catch(() => {
+await loadAcceleration().catch(() => {
   // WASM not available - silently fall back to pure TS
   // No action needed, library works fine without it
 })
