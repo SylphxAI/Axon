@@ -20,7 +20,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
 
   // Case 1: Same shape - simple element-wise
   if (a.shape.length === b.shape.length && a.data.length === b.data.length) {
-    const data = new Float32Array(a.data.length)
+    const data = acquireBuffer(a.data.length)
     const aData = a.data
     const bData = b.data
     const len = data.length
@@ -52,7 +52,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
 
   // Case 2: Scalar broadcasting (shape [1])
   if (b.data.length === 1) {
-    const data = new Float32Array(a.data.length)
+    const data = acquireBuffer(a.data.length)
     const bValue = b.data[0]!
     for (let i = 0; i < data.length; i++) {
       data[i] = a.data[i]! + bValue
@@ -77,7 +77,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
   }
 
   if (a.data.length === 1) {
-    const data = new Float32Array(b.data.length)
+    const data = acquireBuffer(b.data.length)
     const aValue = a.data[0]!
     for (let i = 0; i < data.length; i++) {
       data[i] = aValue + b.data[i]!
@@ -108,7 +108,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
       throw new Error(`Cannot broadcast ${b.shape} to ${a.shape}`)
     }
 
-    const data = new Float32Array(a.data.length)
+    const data = acquireBuffer(a.data.length)
     for (let i = 0; i < rows!; i++) {
       for (let j = 0; j < cols!; j++) {
         data[i * cols! + j] = a.data[i * cols! + j]! + b.data[j]!
@@ -143,7 +143,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
       throw new Error(`Cannot broadcast ${a.shape} to ${b.shape}`)
     }
 
-    const data = new Float32Array(b.data.length)
+    const data = acquireBuffer(b.data.length)
     for (let i = 0; i < rows!; i++) {
       for (let j = 0; j < cols!; j++) {
         data[i * cols! + j] = a.data[j]! + b.data[i * cols! + j]!
@@ -178,7 +178,7 @@ export function add(a: Tensor, b: Tensor): Tensor {
  */
 export function sub(a: Tensor, b: Tensor): Tensor {
   const requiresGrad = a.requiresGrad || b.requiresGrad
-  const data = new Float32Array(a.data.length)
+  const data = acquireBuffer(a.data.length)
 
   for (let i = 0; i < data.length; i++) {
     data[i] = a.data[i]! - b.data[i]!
@@ -210,7 +210,7 @@ export function sub(a: Tensor, b: Tensor): Tensor {
  */
 export function mul(a: Tensor, b: Tensor): Tensor {
   const requiresGrad = a.requiresGrad || b.requiresGrad
-  const data = new Float32Array(Math.max(a.data.length, b.data.length))
+  const data = acquireBuffer(Math.max(a.data.length, b.data.length))
 
   // Broadcasting support - highly optimized
   if (a.shape.length === b.shape.length && a.data.length === b.data.length) {
@@ -401,7 +401,7 @@ export function transpose(t: Tensor): Tensor {
   }
 
   const [rows, cols] = t.shape
-  const data = new Float32Array(t.data.length)
+  const data = acquireBuffer(t.data.length)
 
   for (let i = 0; i < rows!; i++) {
     for (let j = 0; j < cols!; j++) {
