@@ -16,7 +16,8 @@
     "@sylphx/tensor": "workspace:*",
     "@sylphx/functional": "workspace:*",
     "@sylphx/nn": "workspace:*",
-    "@sylphx/optim": "workspace:*"
+    "@sylphx/optim": "workspace:*",
+    "@sylphx/train": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

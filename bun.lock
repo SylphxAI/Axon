@@ -22,6 +22,7 @@
         "@sylphx/optim": "workspace:*",
         "@sylphx/predictors": "workspace:*",
         "@sylphx/tensor": "workspace:*",
+        "@sylphx/train": "workspace:*",
         "@sylphx/wasm": "workspace:*",
         "@sylphx/webgpu": "workspace:*",
       },

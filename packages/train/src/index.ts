@@ -136,3 +136,52 @@ export function trainStep<M, O>(config: {
     loss: loss.data[0]!
   }
 }
+
+/**
+ * Train for multiple epochs
+ * Callback receives epoch number and loss, returns false to stop early
+ */
+export function train<M, O>(config: {
+  model: { forward: (input: Tensor, state: M) => Tensor }
+  modelState: M
+  optimizer: { step: (params: Tensor[], grads: Tensor[], state: O) => { params: Tensor[], state: O } }
+  optState: O
+  input: Tensor
+  target: Tensor
+  lossFn: (pred: Tensor, target: Tensor) => Tensor
+  epochs: number
+  onEpoch?: (epoch: number, loss: number) => boolean | void
+}): {
+  modelState: M
+  optState: O
+  losses: number[]
+} {
+  const { model, optimizer, input, target, lossFn, epochs, onEpoch } = config
+  let { modelState, optState } = config
+
+  const losses: number[] = []
+
+  for (let epoch = 0; epoch < epochs; epoch++) {
+    const result = trainStep({
+      model,
+      modelState,
+      optimizer,
+      optState,
+      input,
+      target,
+      lossFn
+    })
+
+    modelState = result.modelState
+    optState = result.optState
+    losses.push(result.loss)
+
+    // Callback
+    if (onEpoch) {
+      const shouldContinue = onEpoch(epoch, result.loss)
+      if (shouldContinue === false) break
+    }
+  }
+
+  return { modelState, optState, losses }
+}
