@@ -129,7 +129,20 @@
 - **Best result yet:** 4.48 episodes/sec (33.7% faster than v0.1.0 baseline)
 - Cumulative optimizations (pooling + unrolling + architecture) compound effectively
 - Memory pooling + loop unrolling provide consistent 20-30% speedup
-- Still pure TypeScript - WASM/WebGPU ready but not yet integrated into tensor ops
+- WASM integrated into tensor package with automatic threshold-based dispatch
+
+**WASM Analysis:**
+DQN benchmark does not show WASM speedup because:
+- Network processes single examples (batch size 1), not batched
+- Output matrices too small: [1,64], [1,64], [1,4] (<1024 element threshold)
+- WASM micro-benchmarks show 2-2.7x speedup for large matrices (≥1024 elements)
+- To benefit: need batched forward passes or larger networks (128x128+ layers)
+
+**When WASM Provides Speedup:**
+- Matrix multiplication: 2-2.7x faster for matrices ≥1024 elements (32x32)
+- Element-wise ops: Small speedup for arrays >1000 elements
+- Current DQN: No speedup (matrices too small)
+- Larger models (BERT, ResNet): Significant speedup expected
 
 ---
 
@@ -137,8 +150,9 @@
 
 1. ✅ All core features implemented
 2. ✅ Memory pooling for tensor reuse
-3. ✅ WASM integration (loader + tests)
+3. ✅ WASM integration into tensor package (automatic, threshold-based)
 4. ✅ WebGPU integration testing
-5. 🚧 Benchmark WASM vs pure TS performance
-6. 🚧 Benchmark WebGPU vs pure TS performance
-7. 🚧 Profile-guided optimization for remaining hot paths
+5. ✅ WASM micro-benchmarks (2-2.7x speedup confirmed for large matrices)
+6. 🚧 Implement batched training for DQN to benefit from WASM
+7. 🚧 WebGPU micro-benchmarks
+8. 🚧 Profile-guided optimization for remaining hot paths
