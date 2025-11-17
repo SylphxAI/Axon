@@ -107,7 +107,7 @@ export function trainStep<M, O>(config: {
   const loss = lossFn(output, target)
 
   // Backward pass
-  backward(loss)
+  const gradsMap = backward(loss)
 
   // Get parameters and gradients
   const params = getParams(modelState)
@@ -124,7 +124,16 @@ export function trainStep<M, O>(config: {
   // Update model state
   const newModelState = setParams(modelState, newParams)
 
-  // Clear gradients
+  // CRITICAL: Clear ALL gradients and gradFn to prevent memory leak
+  // Clear gradients from all tensors in the computation graph
+  for (const [tensor, _] of gradsMap) {
+    // @ts-ignore - mutating to clear gradient
+    tensor.grad = undefined
+    // @ts-ignore - mutating to clear computation graph
+    tensor.gradFn = undefined
+  }
+
+  // Also clear gradients on new parameters
   for (const p of newParams) {
     // @ts-ignore - mutating for compatibility
     p.grad = undefined
