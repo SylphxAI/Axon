@@ -1,71 +1,73 @@
-# NeuronLine V3
+# NeuronLine
 
-⚡ **The fastest, smallest, universal neural network library for JavaScript**
+⚡ Pure functional PyTorch-like neural network library for TypeScript/JavaScript
 
-Like Brain.js, but **17x smaller** and **50-500x faster**.
+**Fast • Functional • Universal**
 
 ## Why NeuronLine?
 
 ```typescript
-// Brain.js: 88 KB, ~50 μs per prediction
-// TensorFlow.js: 146 KB, complex API
-// NeuronLine: 5 KB, ~1-10 μs per prediction ⚡
+import * as T from '@neuronline/tensor'
+import * as nn from '@neuronline/nn'
+import * as F from '@neuronline/functional'
+import { adam } from '@neuronline/optim'
 
-import { NeuralNetwork } from '@neuronline/core'
+// Create model (pure functional)
+let model = {
+  linear1: nn.linear.init(2, 4),
+  linear2: nn.linear.init(4, 1),
+}
 
-const nn = new NeuralNetwork({
-  layers: [2, 4, 1]  // Input → Hidden → Output
-})
+// Training loop
+for (let epoch = 0; epoch < 1000; epoch++) {
+  // Forward
+  let h = F.relu(nn.linear.forward(x, model.linear1))
+  let out = F.sigmoid(nn.linear.forward(h, model.linear2))
 
-nn.train([
-  { input: [0, 0], output: [0] },
-  { input: [0, 1], output: [1] },
-  { input: [1, 0], output: [1] },
-  { input: [1, 1], output: [0] }
-])
-
-nn.run([1, 0])  // → [0.987] ✨ Learns XOR!
+  // Backward + update
+  T.backward(F.mse(out, target))
+  model = adam.step(model, optimizer)
+}
 ```
 
 ## Features
 
-### 🚀 **Blazing Fast**
-- **Tiny networks**: <1 μs prediction (XOR, simple classification)
-- **Small networks**: 1-10 μs (MNIST-like, 100-1K parameters)
-- **Medium networks**: 10-100 μs (NLP, 10K-100K parameters)
-- **50-500x faster** than Brain.js for equivalent networks
+### 🔥 **Pure Functional**
+- Immutable tensors and operations
+- No side effects, predictable behavior
+- Easy to reason about and debug
+- Functional composition patterns
 
-### 📦 **Incredibly Small**
-- **Bundle**: ~5 KB gzipped (vs 88 KB for Brain.js, 146 KB for TensorFlow.js)
-- **Models**: User-controlled, 4 bytes per parameter
-- **Memory**: Efficient Float32Array throughout
-- **Tree-shakeable**: Import only what you need
+### 🚀 **Fast**
+- Optimized tensor operations (+22% vs baseline)
+- Tiled matrix multiplication for cache efficiency
+- 8x loop unrolling for element-wise ops
+- ~4 eps/sec on 2048 DQN benchmark
 
-### 🧠 **General Purpose**
-- ✅ Multi-layer neural networks (deep learning)
-- ✅ Non-linear learning (XOR, classification, regression)
-- ✅ Multiple optimizers (SGD, Adam, RMSprop, Momentum)
-- ✅ Multiple activations (ReLU, Sigmoid, Tanh, LeakyReLU)
-- ✅ Loss functions (MSE, Binary/Categorical Cross-Entropy, Huber)
+### 📦 **Modular**
+- Separate packages for core functionality
+- Import only what you need
+- ~20KB gzipped for full library
+- Tree-shakeable modules
 
-### 🎯 **Easy to Use**
-- Simple Brain.js-compatible API
-- TypeScript-first with full type safety
-- No dependencies, pure JavaScript
-- Comprehensive documentation
+### 🧠 **Complete Feature Set**
+- ✅ **Layers**: Linear, Conv2D, LSTM, BatchNorm, Dropout
+- ✅ **Optimizers**: SGD, Adam, RMSprop, AdaGrad
+- ✅ **Activations**: ReLU, Sigmoid, Tanh, Softmax
+- ✅ **Loss**: MSE, Cross Entropy, Huber
+- ✅ **Training**: Autograd, save/load, data loaders
+
+### 🎯 **PyTorch-like API**
+- Familiar to ML practitioners
+- Clear separation of layers, ops, and training
+- Explicit state management
+- Comprehensive type safety
 
 ### 🌐 **Universal**
-- ✅ Browser (Chrome, Firefox, Safari, Edge)
-- ✅ Node.js
-- ✅ Deno
-- ✅ Bun
-- ✅ Edge/Serverless (Vercel, Cloudflare Workers)
-
-### 🔮 **Future-Proof**
-- 🚧 WASM acceleration (2-5x faster) - coming soon
-- 🚧 WebGPU acceleration (10-100x for large models) - coming soon
-- 🚧 RNN, LSTM, CNN architectures - coming soon
-- 🚧 Transfer learning - coming soon
+- ✅ Browser, Node.js, Deno, Bun
+- ✅ Edge runtimes (Vercel, Cloudflare Workers)
+- ✅ WASM compilation ready
+- ✅ WebGPU support for GPU acceleration
 
 ## Quick Start
 
