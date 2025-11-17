@@ -260,128 +260,140 @@ export function tanh(x: Tensor): Tensor {
 }
 
 /**
- * Softmax activation (along last dimension)
+ * Softmax activation
  * Pure function with autograd
- * Supports 1D and 2D tensors
+ *
+ * @param x Input tensor
+ * @param dim Dimension to apply softmax (default: -1, last dimension)
+ *
+ * Examples:
+ * - 1D [3] → [3]
+ * - 2D [2,3] with dim=-1 → [2,3] (softmax along last dim)
+ * - 3D [2,3,4] with dim=-1 → [2,3,4] (softmax along last dim)
  */
-export function softmax(x: Tensor): Tensor {
+export function softmax(x: Tensor, dim: number = -1): Tensor {
+  // Normalize dimension
+  const normDim = dim < 0 ? x.shape.length + dim : dim
+
+  if (normDim < 0 || normDim >= x.shape.length) {
+    throw new Error(`softmax: dim ${dim} out of range for tensor with ${x.shape.length} dimensions`)
+  }
+
   const data = acquireBuffer(x.data.length)
 
-  // Handle 1D tensor (single vector)
-  if (x.shape.length === 1) {
-    const n = x.shape[0]!
+  // Calculate strides for the tensor
+  const strides: number[] = []
+  let stride = 1
+  for (let i = x.shape.length - 1; i >= 0; i--) {
+    strides[i] = stride
+    stride *= x.shape[i]!
+  }
+
+  // Size of the dimension we're applying softmax on
+  const dimSize = x.shape[normDim]!
+
+  // Number of independent softmax operations
+  const outerSize = x.data.length / dimSize
+
+  // Iterate over all positions except the softmax dimension
+  for (let outer = 0; outer < outerSize; outer++) {
+    // Convert outer index to multi-dimensional index
+    let tempOuter = outer
+    const indices: number[] = []
+    for (let d = x.shape.length - 1; d >= 0; d--) {
+      if (d === normDim) {
+        indices[d] = 0
+      } else {
+        const size = x.shape[d]!
+        indices[d] = tempOuter % size
+        tempOuter = Math.floor(tempOuter / size)
+      }
+    }
+
+    // Calculate base offset
+    let baseOffset = 0
+    for (let d = 0; d < x.shape.length; d++) {
+      if (d !== normDim) {
+        baseOffset += indices[d]! * strides[d]!
+      }
+    }
 
     // Find max for numerical stability
     let max = -Infinity
-    for (let i = 0; i < n; i++) {
-      max = Math.max(max, x.data[i]!)
+    for (let i = 0; i < dimSize; i++) {
+      const offset = baseOffset + i * strides[normDim]!
+      max = Math.max(max, x.data[offset]!)
     }
 
     // Compute exp and sum
     let sum = 0
-    for (let i = 0; i < n; i++) {
-      const exp = Math.exp(x.data[i]! - max)
-      data[i] = exp
+    for (let i = 0; i < dimSize; i++) {
+      const offset = baseOffset + i * strides[normDim]!
+      const exp = Math.exp(x.data[offset]! - max)
+      data[offset] = exp
       sum += exp
     }
 
     // Normalize
-    for (let i = 0; i < n; i++) {
-      data[i] = data[i]! / sum
+    for (let i = 0; i < dimSize; i++) {
+      const offset = baseOffset + i * strides[normDim]!
+      data[offset] = data[offset]! / sum
     }
+  }
 
-    const gradFn: GradFn | undefined = x.requiresGrad
-      ? {
-          name: 'softmax',
-          inputs: [x],
-          backward: (grad: Tensor) => {
-            const inputGrad = acquireBuffer(x.data.length)
+  const gradFn: GradFn | undefined = x.requiresGrad
+    ? {
+        name: 'softmax',
+        inputs: [x],
+        backward: (grad: Tensor) => {
+          // Softmax gradient: y * (grad - (grad · y))
+          const inputGrad = acquireBuffer(x.data.length)
+
+          for (let outer = 0; outer < outerSize; outer++) {
+            // Convert outer index to multi-dimensional index
+            let tempOuter = outer
+            const indices: number[] = []
+            for (let d = x.shape.length - 1; d >= 0; d--) {
+              if (d === normDim) {
+                indices[d] = 0
+              } else {
+                const size = x.shape[d]!
+                indices[d] = tempOuter % size
+                tempOuter = Math.floor(tempOuter / size)
+              }
+            }
+
+            // Calculate base offset
+            let baseOffset = 0
+            for (let d = 0; d < x.shape.length; d++) {
+              if (d !== normDim) {
+                baseOffset += indices[d]! * strides[d]!
+              }
+            }
 
             // Compute dot product grad · y
             let dot = 0
-            for (let i = 0; i < n; i++) {
-              dot += grad.data[i]! * data[i]!
+            for (let i = 0; i < dimSize; i++) {
+              const offset = baseOffset + i * strides[normDim]!
+              dot += grad.data[offset]! * data[offset]!
             }
 
             // Compute gradient
-            for (let i = 0; i < n; i++) {
-              inputGrad[i] = data[i]! * (grad.data[i]! - dot)
+            for (let i = 0; i < dimSize; i++) {
+              const offset = baseOffset + i * strides[normDim]!
+              inputGrad[offset] = data[offset]! * (grad.data[offset]! - dot)
             }
+          }
 
-            return [{ ...x, data: inputGrad, requiresGrad: false }]
-          },
-        }
-      : undefined
+          return [{ ...x, data: inputGrad, requiresGrad: false }]
+        },
+      }
+    : undefined
 
-    return {
-      data,
-      shape: x.shape,
-      requiresGrad: x.requiresGrad,
-      gradFn,
-    }
+  return {
+    data,
+    shape: x.shape,
+    requiresGrad: x.requiresGrad,
+    gradFn,
   }
-
-  // Handle 2D tensor (batch of vectors)
-  if (x.shape.length === 2) {
-    const [rows, cols] = x.shape
-
-    // For each row
-    for (let i = 0; i < rows!; i++) {
-      // Find max for numerical stability
-      let max = -Infinity
-      for (let j = 0; j < cols!; j++) {
-        max = Math.max(max, x.data[i * cols! + j]!)
-      }
-
-      // Compute exp and sum
-      let sum = 0
-      for (let j = 0; j < cols!; j++) {
-        const exp = Math.exp(x.data[i * cols! + j]! - max)
-        data[i * cols! + j] = exp
-        sum += exp
-      }
-
-      // Normalize
-      for (let j = 0; j < cols!; j++) {
-        data[i * cols! + j] = data[i * cols! + j]! / sum
-      }
-    }
-
-    const gradFn: GradFn | undefined = x.requiresGrad
-      ? {
-          name: 'softmax',
-          inputs: [x],
-          backward: (grad: Tensor) => {
-            // Softmax gradient: y * (grad - (grad · y))
-            const [rows, cols] = x.shape
-            const inputGrad = acquireBuffer(x.data.length)
-
-            for (let i = 0; i < rows!; i++) {
-              // Compute dot product grad · y
-              let dot = 0
-              for (let j = 0; j < cols!; j++) {
-                dot += grad.data[i * cols! + j]! * data[i * cols! + j]!
-              }
-
-              // Compute gradient
-              for (let j = 0; j < cols!; j++) {
-                inputGrad[i * cols! + j] =
-                  data[i * cols! + j]! * (grad.data[i * cols! + j]! - dot)
-              }
-            }
-
-            return [{ ...x, data: inputGrad, requiresGrad: false }]
-          },
-        }
-      : undefined
-
-    return {
-      data,
-      shape: x.shape,
-      requiresGrad: x.requiresGrad,
-      gradFn,
-    }
-  }
-
-  throw new Error(`softmax: unsupported shape [${x.shape.join(', ')}]. Only 1D and 2D tensors are supported.`)
 }
