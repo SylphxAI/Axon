@@ -262,69 +262,126 @@ export function tanh(x: Tensor): Tensor {
 /**
  * Softmax activation (along last dimension)
  * Pure function with autograd
+ * Supports 1D and 2D tensors
  */
 export function softmax(x: Tensor): Tensor {
-  if (x.shape.length !== 2) {
-    throw new Error('softmax currently only supports 2D tensors')
-  }
-
-  const [rows, cols] = x.shape
   const data = acquireBuffer(x.data.length)
 
-  // For each row
-  for (let i = 0; i < rows!; i++) {
+  // Handle 1D tensor (single vector)
+  if (x.shape.length === 1) {
+    const n = x.shape[0]!
+
     // Find max for numerical stability
     let max = -Infinity
-    for (let j = 0; j < cols!; j++) {
-      max = Math.max(max, x.data[i * cols! + j]!)
+    for (let i = 0; i < n; i++) {
+      max = Math.max(max, x.data[i]!)
     }
 
     // Compute exp and sum
     let sum = 0
-    for (let j = 0; j < cols!; j++) {
-      const exp = Math.exp(x.data[i * cols! + j]! - max)
-      data[i * cols! + j] = exp
+    for (let i = 0; i < n; i++) {
+      const exp = Math.exp(x.data[i]! - max)
+      data[i] = exp
       sum += exp
     }
 
     // Normalize
-    for (let j = 0; j < cols!; j++) {
-      data[i * cols! + j] = data[i * cols! + j]! / sum
+    for (let i = 0; i < n; i++) {
+      data[i] = data[i]! / sum
     }
-  }
 
-  const gradFn: GradFn | undefined = x.requiresGrad
-    ? {
-        name: 'softmax',
-        inputs: [x],
-        backward: (grad: Tensor) => {
-          // Softmax gradient: y * (grad - (grad · y))
-          const [rows, cols] = x.shape
-          const inputGrad = acquireBuffer(x.data.length)
+    const gradFn: GradFn | undefined = x.requiresGrad
+      ? {
+          name: 'softmax',
+          inputs: [x],
+          backward: (grad: Tensor) => {
+            const inputGrad = acquireBuffer(x.data.length)
 
-          for (let i = 0; i < rows!; i++) {
             // Compute dot product grad · y
             let dot = 0
-            for (let j = 0; j < cols!; j++) {
-              dot += grad.data[i * cols! + j]! * data[i * cols! + j]!
+            for (let i = 0; i < n; i++) {
+              dot += grad.data[i]! * data[i]!
             }
 
             // Compute gradient
-            for (let j = 0; j < cols!; j++) {
-              inputGrad[i * cols! + j] =
-                data[i * cols! + j]! * (grad.data[i * cols! + j]! - dot)
+            for (let i = 0; i < n; i++) {
+              inputGrad[i] = data[i]! * (grad.data[i]! - dot)
             }
-          }
 
-          return [{ ...x, data: inputGrad, requiresGrad: false }]
-        },
-      }
-    : undefined
+            return [{ ...x, data: inputGrad, requiresGrad: false }]
+          },
+        }
+      : undefined
 
-  return {
-    data,
-    shape: x.shape,
-    requiresGrad: x.requiresGrad,
-    gradFn,
+    return {
+      data,
+      shape: x.shape,
+      requiresGrad: x.requiresGrad,
+      gradFn,
+    }
   }
+
+  // Handle 2D tensor (batch of vectors)
+  if (x.shape.length === 2) {
+    const [rows, cols] = x.shape
+
+    // For each row
+    for (let i = 0; i < rows!; i++) {
+      // Find max for numerical stability
+      let max = -Infinity
+      for (let j = 0; j < cols!; j++) {
+        max = Math.max(max, x.data[i * cols! + j]!)
+      }
+
+      // Compute exp and sum
+      let sum = 0
+      for (let j = 0; j < cols!; j++) {
+        const exp = Math.exp(x.data[i * cols! + j]! - max)
+        data[i * cols! + j] = exp
+        sum += exp
+      }
+
+      // Normalize
+      for (let j = 0; j < cols!; j++) {
+        data[i * cols! + j] = data[i * cols! + j]! / sum
+      }
+    }
+
+    const gradFn: GradFn | undefined = x.requiresGrad
+      ? {
+          name: 'softmax',
+          inputs: [x],
+          backward: (grad: Tensor) => {
+            // Softmax gradient: y * (grad - (grad · y))
+            const [rows, cols] = x.shape
+            const inputGrad = acquireBuffer(x.data.length)
+
+            for (let i = 0; i < rows!; i++) {
+              // Compute dot product grad · y
+              let dot = 0
+              for (let j = 0; j < cols!; j++) {
+                dot += grad.data[i * cols! + j]! * data[i * cols! + j]!
+              }
+
+              // Compute gradient
+              for (let j = 0; j < cols!; j++) {
+                inputGrad[i * cols! + j] =
+                  data[i * cols! + j]! * (grad.data[i * cols! + j]! - dot)
+              }
+            }
+
+            return [{ ...x, data: inputGrad, requiresGrad: false }]
+          },
+        }
+      : undefined
+
+    return {
+      data,
+      shape: x.shape,
+      requiresGrad: x.requiresGrad,
+      gradFn,
+    }
+  }
+
+  throw new Error(`softmax: unsupported shape [${x.shape.join(', ')}]. Only 1D and 2D tensors are supported.`)
 }

@@ -46,7 +46,7 @@ export const Sigmoid = (): Layer<{}> => ({
 /**
  * Softmax activation layer
  * f(x) = exp(x) / sum(exp(x))
- * Note: Currently only supports 2D tensors (along last dimension)
+ * Supports 1D and 2D tensors (along last dimension)
  */
 export const Softmax = (): Layer<{}> => ({
   init: () => ({}),
