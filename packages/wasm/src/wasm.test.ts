@@ -41,28 +41,24 @@ describe('WASM Loader', () => {
     expect(wasm1).toBe(wasm2)
   })
 
-  // WASM functions require AssemblyScript loader for memory management
-  // These tests are skipped pending full integration
-  test.skip('WASM add function works', async () => {
-    const wasm = await loadWASM()
+  test('WASM add function works', async () => {
+    const { wasm } = await import('./index')
+    await loadWASM()
 
     const a = new Float32Array([1, 2, 3, 4])
     const b = new Float32Array([5, 6, 7, 8])
-    const c = new Float32Array(4)
-
-    wasm.add(a, b, c, 4)
+    const c = wasm.add(a, b)
 
     expect(Array.from(c)).toEqual([6, 8, 10, 12])
   })
 
-  test.skip('WASM mul function works', async () => {
-    const wasm = await loadWASM()
+  test('WASM mul function works', async () => {
+    const { wasm } = await import('./index')
+    await loadWASM()
 
     const a = new Float32Array([2, 3, 4, 5])
     const b = new Float32Array([1, 2, 3, 4])
-    const c = new Float32Array(4)
-
-    wasm.mul(a, b, c, 4)
+    const c = wasm.mul(a, b)
 
     expect(Array.from(c)).toEqual([2, 6, 12, 20])
   })

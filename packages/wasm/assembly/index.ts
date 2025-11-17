@@ -6,7 +6,7 @@
 /**
  * Matrix multiplication (optimized WASM version)
  * C = A @ B where A is [m, k] and B is [k, n]
- * Pointers to Float32 arrays in linear memory
+ * Works with raw pointers to float data
  */
 export function matmul(
   aPtr: usize,
@@ -16,9 +16,6 @@ export function matmul(
   k: i32,
   n: i32
 ): void {
-  const a = changetype<Float32Array>(aPtr)
-  const b = changetype<Float32Array>(bPtr)
-  const c = changetype<Float32Array>(cPtr)
   // Optimized matmul with loop tiling for cache efficiency
   const TILE_SIZE: i32 = 32
 
@@ -33,13 +30,16 @@ export function matmul(
         // Compute tile
         for (let ii: i32 = i; ii < iMax; ii++) {
           for (let jj: i32 = j; jj < jMax; jj++) {
-            let sum: f32 = c[ii * n + jj]
+            const cIdx = (ii * n + jj) << 2
+            let sum: f32 = load<f32>(cPtr + cIdx)
 
             for (let kkk: i32 = kk; kkk < kMax; kkk++) {
-              sum += a[ii * k + kkk] * b[kkk * n + jj]
+              const aIdx = (ii * k + kkk) << 2
+              const bIdx = (kkk * n + jj) << 2
+              sum += load<f32>(aPtr + aIdx) * load<f32>(bPtr + bIdx)
             }
 
-            c[ii * n + jj] = sum
+            store<f32>(cPtr + cIdx, sum)
           }
         }
       }
@@ -49,93 +49,89 @@ export function matmul(
 
 /**
  * Element-wise addition with loop unrolling
+ * Works with raw pointers to float data
  */
 export function add(aPtr: usize, bPtr: usize, cPtr: usize, len: i32): void {
-  const a = changetype<Float32Array>(aPtr)
-  const b = changetype<Float32Array>(bPtr)
-  const c = changetype<Float32Array>(cPtr)
   let i: i32 = 0
 
   // Unroll by 8 for SIMD-like performance
   const len8 = len - (len % 8)
   for (; i < len8; i += 8) {
-    c[i] = a[i] + b[i]
-    c[i + 1] = a[i + 1] + b[i + 1]
-    c[i + 2] = a[i + 2] + b[i + 2]
-    c[i + 3] = a[i + 3] + b[i + 3]
-    c[i + 4] = a[i + 4] + b[i + 4]
-    c[i + 5] = a[i + 5] + b[i + 5]
-    c[i + 6] = a[i + 6] + b[i + 6]
-    c[i + 7] = a[i + 7] + b[i + 7]
+    store<f32>(cPtr + (i << 2), load<f32>(aPtr + (i << 2)) + load<f32>(bPtr + (i << 2)))
+    store<f32>(cPtr + ((i + 1) << 2), load<f32>(aPtr + ((i + 1) << 2)) + load<f32>(bPtr + ((i + 1) << 2)))
+    store<f32>(cPtr + ((i + 2) << 2), load<f32>(aPtr + ((i + 2) << 2)) + load<f32>(bPtr + ((i + 2) << 2)))
+    store<f32>(cPtr + ((i + 3) << 2), load<f32>(aPtr + ((i + 3) << 2)) + load<f32>(bPtr + ((i + 3) << 2)))
+    store<f32>(cPtr + ((i + 4) << 2), load<f32>(aPtr + ((i + 4) << 2)) + load<f32>(bPtr + ((i + 4) << 2)))
+    store<f32>(cPtr + ((i + 5) << 2), load<f32>(aPtr + ((i + 5) << 2)) + load<f32>(bPtr + ((i + 5) << 2)))
+    store<f32>(cPtr + ((i + 6) << 2), load<f32>(aPtr + ((i + 6) << 2)) + load<f32>(bPtr + ((i + 6) << 2)))
+    store<f32>(cPtr + ((i + 7) << 2), load<f32>(aPtr + ((i + 7) << 2)) + load<f32>(bPtr + ((i + 7) << 2)))
   }
 
   // Handle remainder
   for (; i < len; i++) {
-    c[i] = a[i] + b[i]
+    store<f32>(cPtr + (i << 2), load<f32>(aPtr + (i << 2)) + load<f32>(bPtr + (i << 2)))
   }
 }
 
 /**
  * Element-wise multiplication with loop unrolling
+ * Works with raw pointers to float data
  */
 export function mul(aPtr: usize, bPtr: usize, cPtr: usize, len: i32): void {
-  const a = changetype<Float32Array>(aPtr)
-  const b = changetype<Float32Array>(bPtr)
-  const c = changetype<Float32Array>(cPtr)
   let i: i32 = 0
 
   // Unroll by 8
   const len8 = len - (len % 8)
   for (; i < len8; i += 8) {
-    c[i] = a[i] * b[i]
-    c[i + 1] = a[i + 1] * b[i + 1]
-    c[i + 2] = a[i + 2] * b[i + 2]
-    c[i + 3] = a[i + 3] * b[i + 3]
-    c[i + 4] = a[i + 4] * b[i + 4]
-    c[i + 5] = a[i + 5] * b[i + 5]
-    c[i + 6] = a[i + 6] * b[i + 6]
-    c[i + 7] = a[i + 7] * b[i + 7]
+    store<f32>(cPtr + (i << 2), load<f32>(aPtr + (i << 2)) * load<f32>(bPtr + (i << 2)))
+    store<f32>(cPtr + ((i + 1) << 2), load<f32>(aPtr + ((i + 1) << 2)) * load<f32>(bPtr + ((i + 1) << 2)))
+    store<f32>(cPtr + ((i + 2) << 2), load<f32>(aPtr + ((i + 2) << 2)) * load<f32>(bPtr + ((i + 2) << 2)))
+    store<f32>(cPtr + ((i + 3) << 2), load<f32>(aPtr + ((i + 3) << 2)) * load<f32>(bPtr + ((i + 3) << 2)))
+    store<f32>(cPtr + ((i + 4) << 2), load<f32>(aPtr + ((i + 4) << 2)) * load<f32>(bPtr + ((i + 4) << 2)))
+    store<f32>(cPtr + ((i + 5) << 2), load<f32>(aPtr + ((i + 5) << 2)) * load<f32>(bPtr + ((i + 5) << 2)))
+    store<f32>(cPtr + ((i + 6) << 2), load<f32>(aPtr + ((i + 6) << 2)) * load<f32>(bPtr + ((i + 6) << 2)))
+    store<f32>(cPtr + ((i + 7) << 2), load<f32>(aPtr + ((i + 7) << 2)) * load<f32>(bPtr + ((i + 7) << 2)))
   }
 
   for (; i < len; i++) {
-    c[i] = a[i] * b[i]
+    store<f32>(cPtr + (i << 2), load<f32>(aPtr + (i << 2)) * load<f32>(bPtr + (i << 2)))
   }
 }
 
 /**
  * ReLU activation
+ * Works with raw pointers to float data
  */
 export function relu(inputPtr: usize, outputPtr: usize, len: i32): void {
-  const input = changetype<Float32Array>(inputPtr)
-  const output = changetype<Float32Array>(outputPtr)
   for (let i: i32 = 0; i < len; i++) {
-    output[i] = max(0, input[i])
+    const val = load<f32>(inputPtr + (i << 2))
+    store<f32>(outputPtr + (i << 2), max(0, val))
   }
 }
 
 /**
  * Sigmoid activation (approximation for speed)
+ * Works with raw pointers to float data
  */
 export function sigmoid(inputPtr: usize, outputPtr: usize, len: i32): void {
-  const input = changetype<Float32Array>(inputPtr)
-  const output = changetype<Float32Array>(outputPtr)
   for (let i: i32 = 0; i < len; i++) {
-    const x = input[i]
+    const x = load<f32>(inputPtr + (i << 2))
     // Fast sigmoid approximation: 0.5 + 0.5 * x / (1 + abs(x))
-    output[i] = 0.5 + 0.5 * x / (1 + abs(x))
+    const result = <f32>(0.5 + 0.5 * x / (1 + abs(x)))
+    store<f32>(outputPtr + (i << 2), result)
   }
 }
 
 /**
  * Tanh activation
+ * Works with raw pointers to float data
  */
 export function tanh(inputPtr: usize, outputPtr: usize, len: i32): void {
-  const input = changetype<Float32Array>(inputPtr)
-  const output = changetype<Float32Array>(outputPtr)
   for (let i: i32 = 0; i < len; i++) {
-    const x = input[i]
+    const x = load<f32>(inputPtr + (i << 2))
     const e2x = exp(2 * x)
-    output[i] = (e2x - 1) / (e2x + 1)
+    const result = (e2x - 1) / (e2x + 1)
+    store<f32>(outputPtr + (i << 2), result)
   }
 }
 
