@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { mul } from '@neuronline/tensor'
+import { mul, acquireBuffer } from '@neuronline/tensor'
 
 /**
  * Dropout configuration
@@ -24,10 +24,25 @@ export function forward(input: Tensor, config: DropoutConfig): Tensor {
   }
 
   // Create dropout mask
-  const mask = new Float32Array(input.data.length)
+  const mask = acquireBuffer(input.data.length)
   const scale = 1 / (1 - config.p)
 
-  for (let i = 0; i < mask.length; i++) {
+  // Unroll by 8 for better performance
+  let i = 0
+  const len8 = mask.length - 7
+  for (; i < len8; i += 8) {
+    mask[i] = Math.random() > config.p ? scale : 0
+    mask[i + 1] = Math.random() > config.p ? scale : 0
+    mask[i + 2] = Math.random() > config.p ? scale : 0
+    mask[i + 3] = Math.random() > config.p ? scale : 0
+    mask[i + 4] = Math.random() > config.p ? scale : 0
+    mask[i + 5] = Math.random() > config.p ? scale : 0
+    mask[i + 6] = Math.random() > config.p ? scale : 0
+    mask[i + 7] = Math.random() > config.p ? scale : 0
+  }
+
+  // Handle remainder
+  for (; i < mask.length; i++) {
     mask[i] = Math.random() > config.p ? scale : 0
   }
 

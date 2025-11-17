@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { heNormal, uniform, matmul } from '@neuronline/tensor'
+import { heNormal, uniform, matmul, acquireBuffer } from '@neuronline/tensor'
 
 /**
  * Conv2D layer state
@@ -143,7 +143,7 @@ function im2col(
   const colHeight = channels * kH * kW
   const colWidth = batch * outH * outW
 
-  const colData = new Float32Array(colHeight * colWidth)
+  const colData = acquireBuffer(colHeight * colWidth)
 
   // For each output position
   let colIdx = 0
@@ -190,7 +190,7 @@ function padInput(
   const paddedH = height + 2 * padding
   const paddedW = width + 2 * padding
 
-  const paddedData = new Float32Array(batch * channels * paddedH * paddedW)
+  const paddedData = acquireBuffer(batch * channels * paddedH * paddedW)
 
   for (let b = 0; b < batch; b++) {
     for (let c = 0; c < channels; c++) {
@@ -228,12 +228,29 @@ function addBias(
   const outChannels = convResult.shape[0]!
   const spatialSize = batch * outH * outW
 
-  const output = new Float32Array(outChannels * spatialSize)
+  const output = acquireBuffer(outChannels * spatialSize)
 
   for (let c = 0; c < outChannels; c++) {
     const biasVal = bias.data[c]!
-    for (let i = 0; i < spatialSize; i++) {
-      output[c * spatialSize + i] = convResult.data[c * spatialSize + i]! + biasVal
+    const offset = c * spatialSize
+
+    // Unroll by 8 for better performance
+    let i = 0
+    const len8 = spatialSize - 7
+    for (; i < len8; i += 8) {
+      output[offset + i] = convResult.data[offset + i]! + biasVal
+      output[offset + i + 1] = convResult.data[offset + i + 1]! + biasVal
+      output[offset + i + 2] = convResult.data[offset + i + 2]! + biasVal
+      output[offset + i + 3] = convResult.data[offset + i + 3]! + biasVal
+      output[offset + i + 4] = convResult.data[offset + i + 4]! + biasVal
+      output[offset + i + 5] = convResult.data[offset + i + 5]! + biasVal
+      output[offset + i + 6] = convResult.data[offset + i + 6]! + biasVal
+      output[offset + i + 7] = convResult.data[offset + i + 7]! + biasVal
+    }
+
+    // Handle remainder
+    for (; i < spatialSize; i++) {
+      output[offset + i] = convResult.data[offset + i]! + biasVal
     }
   }
 

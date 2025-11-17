@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { ones, zeros, mul, add, scalar } from '@neuronline/tensor'
+import { ones, zeros, mul, add, scalar, acquireBuffer } from '@neuronline/tensor'
 
 /**
  * BatchNorm layer state
@@ -94,7 +94,7 @@ function calculateMean(input: Tensor): Tensor {
   const numSamples = input.shape[0]!
   const numFeatures = input.data.length / numSamples
 
-  const mean = new Float32Array(numFeatures)
+  const mean = acquireBuffer(numFeatures)
 
   for (let i = 0; i < numSamples; i++) {
     for (let j = 0; j < numFeatures; j++) {
@@ -113,7 +113,7 @@ function calculateVariance(input: Tensor, mean: Tensor): Tensor {
   const numSamples = input.shape[0]!
   const numFeatures = mean.data.length
 
-  const variance = new Float32Array(numFeatures)
+  const variance = acquireBuffer(numFeatures)
 
   for (let i = 0; i < numSamples; i++) {
     for (let j = 0; j < numFeatures; j++) {
@@ -138,7 +138,7 @@ function normalize(
   const numSamples = input.shape[0]!
   const numFeatures = mean.data.length
 
-  const normalized = new Float32Array(input.data.length)
+  const normalized = acquireBuffer(input.data.length)
 
   for (let i = 0; i < numSamples; i++) {
     for (let j = 0; j < numFeatures; j++) {
