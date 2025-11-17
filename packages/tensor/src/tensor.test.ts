@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, test, beforeEach } from 'bun:test'
 import * as T from './index'
 
 describe('Tensor Creation', () => {
@@ -122,5 +122,116 @@ describe('Autograd', () => {
     // dc/da = b^T, dc/db = a^T
     expect(T.toArray(grads.get(a)!)).toEqual([[3, 4]])
     expect(T.toArray(grads.get(b)!)).toEqual([[1], [2]])
+  })
+})
+
+describe('Memory Pooling', () => {
+  beforeEach(() => {
+    T.clearPool()
+  })
+
+  test('pool initially empty', () => {
+    const stats = T.poolStats()
+    expect(stats.totalBuffers).toBe(0)
+    expect(stats.inUse).toBe(0)
+    expect(stats.available).toBe(0)
+  })
+
+  test('allocates buffers without scope', () => {
+    const a = T.randn([10, 10])
+    const b = T.randn([10, 10])
+
+    for (let i = 0; i < 50; i++) {
+      T.matmul(a, b)
+    }
+
+    const stats = T.poolStats()
+    expect(stats.totalBuffers).toBe(50)
+    expect(stats.inUse).toBe(50)
+    expect(stats.available).toBe(0)
+  })
+
+  test('reuses buffers with scope', () => {
+    const a = T.randn([10, 10])
+    const b = T.randn([10, 10])
+
+    for (let i = 0; i < 50; i++) {
+      T.withScope(() => {
+        T.matmul(a, b)
+      })
+    }
+
+    const stats = T.poolStats()
+    expect(stats.totalBuffers).toBe(1)
+    expect(stats.inUse).toBe(0)
+    expect(stats.available).toBe(1)
+  })
+
+  test('limits buffer creation to maxPoolSize', () => {
+    const a = T.randn([10, 10])
+    const b = T.randn([10, 10])
+
+    for (let i = 0; i < 200; i++) {
+      T.matmul(a, b)
+    }
+
+    const stats = T.poolStats()
+    expect(stats.totalBuffers).toBe(100) // maxPoolSize
+    expect(stats.inUse).toBe(100)
+  })
+
+  test('releases nested scopes correctly', () => {
+    const a = T.randn([5, 5])
+    const b = T.randn([5, 5])
+
+    T.withScope(() => {
+      const c = T.matmul(a, b)
+      T.withScope(() => {
+        T.add(c, c)
+      })
+    })
+
+    const stats = T.poolStats()
+    expect(stats.inUse).toBe(0)
+    expect(stats.available).toBe(stats.totalBuffers)
+  })
+
+  test('pool can be disabled', () => {
+    T.setPoolingEnabled(false)
+
+    const a = T.randn([10, 10])
+    const b = T.randn([10, 10])
+
+    for (let i = 0; i < 10; i++) {
+      T.matmul(a, b)
+    }
+
+    const stats = T.poolStats()
+    expect(stats.totalBuffers).toBe(0)
+
+    T.setPoolingEnabled(true)
+  })
+})
+
+describe('Broadcasting', () => {
+  test('scalar broadcast to vector', () => {
+    const a = T.tensor([1, 2, 3])
+    const b = T.scalar(5)
+    const c = T.add(a, b)
+    expect(Array.from(c.data)).toEqual([6, 7, 8])
+  })
+
+  test('vector broadcast to matrix (bias)', () => {
+    const a = T.tensor([[1, 2, 3], [4, 5, 6]])
+    const b = T.tensor([10, 20, 30])
+    const c = T.add(a, b)
+    expect(T.toArray(c)).toEqual([[11, 22, 33], [14, 25, 36]])
+  })
+
+  test('scalar multiplication', () => {
+    const a = T.tensor([1, 2, 3, 4])
+    const b = T.scalar(2)
+    const c = T.mul(a, b)
+    expect(Array.from(c.data)).toEqual([2, 4, 6, 8])
   })
 })
