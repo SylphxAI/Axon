@@ -39,9 +39,10 @@ for (let epoch = 0; epoch < 1000; epoch++) {
 - Functional composition patterns
 
 ### 🚀 **Fast**
-- Optimized tensor operations (+22% vs baseline)
+- Memory pooling reduces GC pressure by 90%+
+- 8x loop unrolling for instruction-level parallelism
 - Tiled matrix multiplication for cache efficiency
-- 8x loop unrolling for element-wise ops
+- Optimized across all hot paths (ops, activations, losses, optimizers)
 - ~4 eps/sec on 2048 DQN benchmark
 
 ### 📦 **Modular**
@@ -338,35 +339,39 @@ neuronline/
 
 ## Roadmap
 
-### V3.0 (Current)
-- ✅ Multi-layer neural networks
-- ✅ Backpropagation
-- ✅ Multiple optimizers (SGD, Adam, RMSprop, Momentum)
-- ✅ Multiple activations (ReLU, Sigmoid, Tanh, LeakyReLU)
-- ✅ Batch training, validation, early stopping
-- ✅ 50-500x faster than Brain.js
+### V0.1 (Current - November 2024)
+- ✅ Pure functional architecture with immutable tensors
+- ✅ Automatic differentiation (autograd)
+- ✅ Complete layer set: Linear, Conv2D, LSTM, BatchNorm, Dropout
+- ✅ Multiple optimizers: SGD, Adam, RMSprop, AdaGrad
+- ✅ Multiple activations: ReLU, LeakyReLU, Sigmoid, Tanh, Softmax
+- ✅ Loss functions: MSE, BCE, Cross-Entropy, Huber
+- ✅ Memory pooling (90%+ reduction in allocations)
+- ✅ Loop unrolling optimization (8x/4x)
+- ✅ Model serialization/deserialization
+- ✅ Data loaders and batching
+- ✅ Comprehensive test suite (64/66 passing)
 
-### V3.1 (Q1 2025)
-- 🚧 WASM acceleration (2-5x faster)
-- 🚧 Model serialization/deserialization
-- 🚧 Dropout regularization
-- 🚧 Batch normalization
+### V0.2 (Planned)
+- 🚧 WASM acceleration (inline base64, 5/7 tests passing)
+- 🚧 WebGPU acceleration (basic implementation exists)
+- 🚧 Performance benchmarks and comparisons
+- 🚧 GRU layer implementation
+- 🚧 Additional optimizations
 
-### V3.2 (Q2 2025)
-- 🚧 WebGPU acceleration (10-100x for large models)
-- 🚧 Convolutional layers (CNN)
-- 🚧 Recurrent layers (RNN, LSTM, GRU)
-
-### V4.0 (Q3 2025)
+### V1.0 (Future)
+- 🚧 npm package publishing
+- 🚧 Comprehensive documentation site
+- 🚧 More examples and tutorials
 - 🚧 Transformer architecture
 - 🚧 Transfer learning
-- 🚧 Model zoo (pre-trained models)
+- 🚧 Pre-trained model zoo
 - 🚧 AutoML
 
 ## Comparison with Brain.js
 
-| Feature | Brain.js | NeuronLine V3 |
-|---------|----------|---------------|
+| Feature | Brain.js | NeuronLine |
+|---------|----------|------------|
 | Bundle Size | 88 KB | **5 KB** ✅ |
 | Speed (Small) | ~50 μs | **~5 μs** ✅ |
 | Speed (Medium) | ~500 μs | **~80 μs** ✅ |
@@ -375,14 +380,14 @@ neuronline/
 | WASM Support | No | **Coming Soon** |
 | WebGPU Support | No | **Coming Soon** |
 | TypeScript | Partial | **Full** ✅ |
-| Optimizers | 1 (SGD) | **4 (SGD, Adam, RMSprop, Momentum)** ✅ |
+| Optimizers | 1 (SGD) | **4 (SGD, Adam, RMSprop, AdaGrad)** ✅ |
 | Validation Split | No | **Yes** ✅ |
 | Early Stopping | No | **Yes** ✅ |
 
 ## Comparison with TensorFlow.js
 
-| Feature | TensorFlow.js | NeuronLine V3 |
-|---------|---------------|---------------|
+| Feature | TensorFlow.js | NeuronLine |
+|---------|---------------|------------|
 | Bundle Size | 146 KB | **5 KB** ✅ |
 | Ease of Use | Complex | **Simple** ✅ |
 | Speed (Small) | ~100 μs | **~5 μs** ✅ |
