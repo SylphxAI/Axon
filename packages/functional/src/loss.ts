@@ -3,7 +3,7 @@
  */
 
 import type { Tensor } from '@neuronline/tensor'
-import { mean, sub, mul } from '@neuronline/tensor'
+import { mean, sub, mul, acquireBuffer } from '@neuronline/tensor'
 
 /**
  * Mean Squared Error loss
@@ -23,7 +23,7 @@ export function binaryCrossEntropy(predicted: Tensor, target: Tensor): Tensor {
   const epsilon = 1e-15
 
   // Clip predictions to avoid log(0)
-  const clippedData = new Float32Array(predicted.data.length)
+  const clippedData = acquireBuffer(predicted.data.length)
   for (let i = 0; i < predicted.data.length; i++) {
     clippedData[i] = Math.max(epsilon, Math.min(1 - epsilon, predicted.data[i]!))
   }
@@ -34,7 +34,7 @@ export function binaryCrossEntropy(predicted: Tensor, target: Tensor): Tensor {
   }
 
   // -[y * log(p) + (1 - y) * log(1 - p)]
-  const lossData = new Float32Array(predicted.data.length)
+  const lossData = acquireBuffer(predicted.data.length)
   for (let i = 0; i < predicted.data.length; i++) {
     const p = clipped.data[i]!
     const y = target.data[i]!
@@ -47,7 +47,7 @@ export function binaryCrossEntropy(predicted: Tensor, target: Tensor): Tensor {
         inputs: [predicted, target],
         backward: (grad: Tensor) => {
           // dL/dp = -y/p + (1-y)/(1-p)
-          const predGrad = new Float32Array(predicted.data.length)
+          const predGrad = acquireBuffer(predicted.data.length)
           const gradValue = grad.data[0]! / predicted.data.length // Mean scaling
 
           for (let i = 0; i < predicted.data.length; i++) {
@@ -58,7 +58,7 @@ export function binaryCrossEntropy(predicted: Tensor, target: Tensor): Tensor {
 
           return [
             { ...predicted, data: predGrad, requiresGrad: false },
-            { ...target, data: new Float32Array(target.data.length), requiresGrad: false },
+            { ...target, data: acquireBuffer(target.data.length), requiresGrad: false },
           ]
         },
       }
@@ -87,13 +87,13 @@ export function crossEntropy(predicted: Tensor, target: Tensor): Tensor {
   const [batchSize, numClasses] = predicted.shape
 
   // Clip predictions
-  const clippedData = new Float32Array(predicted.data.length)
+  const clippedData = acquireBuffer(predicted.data.length)
   for (let i = 0; i < predicted.data.length; i++) {
     clippedData[i] = Math.max(epsilon, Math.min(1 - epsilon, predicted.data[i]!))
   }
 
   // Compute loss: -sum(y * log(p))
-  const lossData = new Float32Array(batchSize!)
+  const lossData = acquireBuffer(batchSize!)
   for (let i = 0; i < batchSize!; i++) {
     let loss = 0
     for (let j = 0; j < numClasses!; j++) {
@@ -111,7 +111,7 @@ export function crossEntropy(predicted: Tensor, target: Tensor): Tensor {
         inputs: [predicted, target],
         backward: (grad: Tensor) => {
           // dL/dp = -y/p
-          const predGrad = new Float32Array(predicted.data.length)
+          const predGrad = acquireBuffer(predicted.data.length)
           const gradValue = grad.data[0]! / batchSize! // Mean scaling
 
           for (let i = 0; i < predicted.data.length; i++) {
@@ -122,7 +122,7 @@ export function crossEntropy(predicted: Tensor, target: Tensor): Tensor {
 
           return [
             { ...predicted, data: predGrad, requiresGrad: false },
-            { ...target, data: new Float32Array(target.data.length), requiresGrad: false },
+            { ...target, data: acquireBuffer(target.data.length), requiresGrad: false },
           ]
         },
       }
@@ -145,7 +145,7 @@ export function crossEntropy(predicted: Tensor, target: Tensor): Tensor {
 export function huber(predicted: Tensor, target: Tensor, delta = 1.0): Tensor {
   const diff = sub(predicted, target)
 
-  const lossData = new Float32Array(diff.data.length)
+  const lossData = acquireBuffer(diff.data.length)
   for (let i = 0; i < diff.data.length; i++) {
     const absDiff = Math.abs(diff.data[i]!)
     if (absDiff <= delta) {
@@ -160,7 +160,7 @@ export function huber(predicted: Tensor, target: Tensor, delta = 1.0): Tensor {
         name: 'huber',
         inputs: [predicted, target],
         backward: (grad: Tensor) => {
-          const predGrad = new Float32Array(predicted.data.length)
+          const predGrad = acquireBuffer(predicted.data.length)
           const gradValue = grad.data[0]! / predicted.data.length
 
           for (let i = 0; i < diff.data.length; i++) {
@@ -174,7 +174,7 @@ export function huber(predicted: Tensor, target: Tensor, delta = 1.0): Tensor {
 
           return [
             { ...predicted, data: predGrad, requiresGrad: false },
-            { ...target, data: new Float32Array(target.data.length), requiresGrad: false },
+            { ...target, data: acquireBuffer(target.data.length), requiresGrad: false },
           ]
         },
       }
