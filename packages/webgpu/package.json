@@ -1,0 +1,17 @@
+{
+  "name": "@neuronline/webgpu",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "WebGPU-accelerated tensor operations for NeuronLine",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node --format esm"
+  },
+  "dependencies": {
+    "@neuronline/tensor": "workspace:*"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.51",
+    "typescript": "^5.7.3"
+  }
+}
