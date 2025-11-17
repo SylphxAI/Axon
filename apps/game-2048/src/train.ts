@@ -8,11 +8,13 @@ import * as agent from './agent'
 console.log('🤖 Training DQN Agent for 2048\n')
 
 // Training config
-const NUM_EPISODES = 1000
+const NUM_EPISODES = parseInt(process.argv[2] || '1000')
 const BATCH_SIZE = 32
 const REPLAY_BUFFER_SIZE = 10000
 const TRAIN_FREQUENCY = 4
 const PRINT_FREQUENCY = 50
+
+console.log(`Training for ${NUM_EPISODES} episodes\n`)
 
 // Replay buffer
 const replayBuffer: agent.Experience[] = []
