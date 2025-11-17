@@ -8,6 +8,7 @@ Index of all architectural decisions for NeuronLine.
 - [ADR-002](002-tiled-matrix-multiplication.md) - Tiled Matrix Multiplication
 - [ADR-003](003-optional-acceleration-packages.md) - WASM/WebGPU as Optional Packages
 - [ADR-004](004-memory-pooling.md) - Memory Pooling with Scope-Based Lifetime Management
+- [ADR-005](005-loop-unrolling-optimization.md) - Loop Unrolling for Instruction-Level Parallelism
 
 ## Proposed
 
