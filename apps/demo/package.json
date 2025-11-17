@@ -12,7 +12,8 @@
     "@sylphx/neuronline-core": "workspace:*",
     "@sylphx/neuronline-predictors": "workspace:*",
     "@neuronline/wasm": "workspace:*",
-    "@neuronline/webgpu": "workspace:*"
+    "@neuronline/webgpu": "workspace:*",
+    "@neuronline/tensor": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
