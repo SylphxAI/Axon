@@ -14,6 +14,9 @@
       "name": "@sylphx/neuronline-demo",
       "version": "0.1.0",
       "dependencies": {
+        "@neuronline/tensor": "workspace:*",
+        "@neuronline/wasm": "workspace:*",
+        "@neuronline/webgpu": "workspace:*",
         "@sylphx/neuronline-core": "workspace:*",
         "@sylphx/neuronline-predictors": "workspace:*",
       },
@@ -89,6 +92,9 @@
     "packages/tensor": {
       "name": "@neuronline/tensor",
       "version": "0.1.0",
+      "optionalDependencies": {
+        "@neuronline/wasm": "workspace:*",
+      },
     },
     "packages/wasm": {
       "name": "@neuronline/wasm",
@@ -98,6 +104,17 @@
       },
       "devDependencies": {
         "assemblyscript": "^0.27.0",
+        "typescript": "^5.7.3",
+      },
+    },
+    "packages/webgpu": {
+      "name": "@neuronline/webgpu",
+      "version": "0.1.0",
+      "dependencies": {
+        "@neuronline/tensor": "workspace:*",
+      },
+      "devDependencies": {
+        "@webgpu/types": "^0.1.51",
         "typescript": "^5.7.3",
       },
     },
@@ -133,6 +150,8 @@
 
     "@neuronline/wasm": ["@neuronline/wasm@workspace:packages/wasm"],
 
+    "@neuronline/webgpu": ["@neuronline/webgpu@workspace:packages/webgpu"],
+
     "@sylphx/neuronline-core": ["@sylphx/neuronline-core@workspace:packages/core"],
 
     "@sylphx/neuronline-demo": ["@sylphx/neuronline-demo@workspace:apps/demo"],
@@ -144,6 +163,8 @@
     "@types/node": ["@types/node@24.10.1", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ=="],
 
     "@types/react": ["@types/react@19.2.5", "", { "dependencies": { "csstype": "^3.0.2" } }, "sha512-keKxkZMqnDicuvFoJbzrhbtdLSPhj/rZThDlKWCDbgXmUg0rEUFtRssDXKYmtXluZlIqiC5VqkCgRwzuyLHKHw=="],
+
+    "@webgpu/types": ["@webgpu/types@0.1.66", "", {}, "sha512-YA2hLrwLpDsRueNDXIMqN9NTzD6bCDkuXbOSe0heS+f8YE8usA6Gbv1prj81pzVHrbaAma7zObnIC+I6/sXJgA=="],
 
     "assemblyscript": ["assemblyscript@0.27.37", "", { "dependencies": { "binaryen": "116.0.0-nightly.20240114", "long": "^5.2.4" }, "bin": { "asc": "bin/asc.js", "asinit": "bin/asinit.js" } }, "sha512-YtY5k3PiV3SyUQ6gRlR2OCn8dcVRwkpiG/k2T5buoL2ymH/Z/YbaYWbk/f9mO2HTgEtGWjPiAQrIuvA7G/63Gg=="],
 

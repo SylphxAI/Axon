@@ -34,6 +34,9 @@ export {
   toArray,
   clone,
   loadAcceleration,
+  loadGPUAcceleration,
+  isGPUAvailable,
+  getGPU,
 } from './ops'
 
 // Autograd

@@ -175,8 +175,8 @@
 4. ✅ WebGPU integration testing
 5. ✅ WASM micro-benchmarks (2-2.7x speedup confirmed)
 6. ✅ **Batched training implementation (117x speedup achieved!)**
-7. 🚧 WebGPU integration into tensor package
-8. 🚧 Benchmark WebGPU vs WASM performance
+7. ✅ **WebGPU integration into tensor package (async API)**
+8. 🚧 Benchmark WebGPU vs WASM performance (browser required)
 9. 🚧 Implement additional batch operations (batch normalization, etc.)
 10. 🚧 Profile-guided optimization for remaining hot paths
 
@@ -195,3 +195,57 @@
 - Batched training (eliminates 96% of function overhead)
 
 **Results in production-ready performance comparable to optimized C++ implementations!**
+
+---
+
+## Acceleration Strategy
+
+### WASM Acceleration (Synchronous)
+**Status**: ✅ Fully integrated into tensor operations
+**Threshold**: ≥1024 elements (e.g., 32x32 matrices)
+**Performance**: 2-2.7x speedup for matrix multiplication
+**Use cases**: Training with batch size 32-64, DQN, small CNNs, RNNs
+
+**Integration**:
+```typescript
+import { loadAcceleration, matmul } from '@neuronline/tensor'
+
+// Load once at startup
+await loadAcceleration()
+
+// WASM activates automatically for large matrices
+const c = matmul(a, b) // Uses WASM if result ≥1024 elements
+```
+
+### WebGPU Acceleration (Asynchronous)
+**Status**: ✅ Available via async API
+**Threshold**: Recommended ≥10,000 elements due to GPU overhead
+**Performance**: Massive parallelism for very large operations
+**Use cases**: Large batch inference (>128), Transformer models, large CNNs
+
+**Integration**:
+```typescript
+import { loadGPUAcceleration, getGPU } from '@neuronline/tensor'
+
+// Load once at startup (browser only)
+await loadGPUAcceleration()
+
+// Use GPU API directly for async operations
+const gpu = getGPU()
+const result = await gpu.matmulGPU(a, b, m, k, n)
+```
+
+**Why Async Only**:
+- WebGPU operations are inherently asynchronous
+- Making entire tensor API async would break existing code
+- Separate async API provides better control for GPU operations
+- Allows mixing sync WASM for training, async GPU for inference
+
+### Decision Matrix
+
+| Matrix Size | Batch Size | Recommended | Reason |
+|------------|-----------|-------------|---------|
+| <1K elements | Any | TypeScript | WASM/GPU overhead not worth it |
+| 1K-100K | 32-64 | WASM (auto) | Synchronous, good speedup |
+| >100K | >128 | WebGPU (manual) | Maximum parallelism |
+| Any | Single | TypeScript | No batching benefit |

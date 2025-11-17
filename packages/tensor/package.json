@@ -38,6 +38,7 @@
     "access": "public"
   },
   "optionalDependencies": {
-    "@neuronline/wasm": "workspace:*"
+    "@neuronline/wasm": "workspace:*",
+    "@neuronline/webgpu": "workspace:*"
   }
 }

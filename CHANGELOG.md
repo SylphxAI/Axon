@@ -5,6 +5,41 @@ All notable changes to NeuronLine will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2024-11-17
+
+### Added
+- **WebGPU integration** (`@neuronline/tensor`)
+  - Async GPU acceleration API via `loadGPUAcceleration()` and `getGPU()`
+  - Access WebGPU operations directly: `matmulGPU()`, `addGPU()`, `reluGPU()`
+  - Optional dependency with graceful degradation
+  - Browser-only (Chrome, Edge with WebGPU support)
+  - Recommended for very large matrices (>100K elements)
+
+- **Dual acceleration strategy**
+  - WASM: Synchronous, automatic, 1K-100K elements
+  - WebGPU: Asynchronous, manual, >100K elements
+  - Allows hybrid approach: WASM for training, GPU for inference
+
+- **Demo files**
+  - `gpu-vs-wasm-bench.ts`: Comprehensive benchmark comparing WASM vs WebGPU
+  - `webgpu-async-demo.ts`: Shows async GPU API usage patterns
+
+### Changed
+- WebGPU package no longer depends on tensor (removes circular dependency)
+- Updated exports in `@neuronline/tensor` to include GPU functions
+- All 67 tests passing (8 WebGPU tests skip in Node/Bun)
+
+### Technical Details
+- WebGPU operations are async and cannot integrate into sync tensor API
+- Separate async API preserves existing synchronous workflow
+- GPU overhead makes it suitable only for very large operations
+- WASM remains the primary acceleration for typical workloads
+
+### Documentation
+- Updated PERFORMANCE.md with acceleration strategy guide
+- Decision matrix for choosing TypeScript/WASM/WebGPU
+- Integration examples for both acceleration methods
+
 ## [0.1.6] - 2024-11-17
 
 ### Added

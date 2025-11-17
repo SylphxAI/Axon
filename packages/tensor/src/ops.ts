@@ -9,10 +9,16 @@ import { acquireBuffer } from './pool'
 // Optional WASM acceleration (graceful degradation)
 let wasmModule: any = null
 
+// Optional WebGPU acceleration (async operations only)
+let gpuModule: any = null
+
 /**
  * Load WASM acceleration (optional)
  * Call this once at app startup to enable 2x+ faster matrix multiplication
  * Falls back to pure TypeScript if WASM is unavailable
+ *
+ * WASM is synchronous and integrates directly into tensor operations
+ * Activates for matrices ≥1024 elements (e.g., 32x32)
  */
 export async function loadAcceleration(): Promise<boolean> {
   if (wasmModule) return true
@@ -26,6 +32,49 @@ export async function loadAcceleration(): Promise<boolean> {
     // WASM not available - will fall back to pure TS
     return false
   }
+}
+
+/**
+ * Load WebGPU acceleration (optional)
+ * WebGPU provides GPU-accelerated operations but requires async API
+ *
+ * NOTE: WebGPU operations are async and cannot be integrated into
+ * synchronous tensor operations. Use the WebGPU API directly for
+ * large batch operations where GPU acceleration is beneficial.
+ *
+ * Recommended threshold: ≥10,000 elements due to GPU overhead
+ */
+export async function loadGPUAcceleration(): Promise<boolean> {
+  if (gpuModule) return true
+
+  try {
+    // @ts-expect-error - Optional dependency, may not be available
+    const webgpu = await import('@neuronline/webgpu')
+    await webgpu.initWebGPU()
+    gpuModule = webgpu
+    return true
+  } catch (e) {
+    // WebGPU not available (not in browser or not supported)
+    return false
+  }
+}
+
+/**
+ * Check if WebGPU is available and initialized
+ */
+export function isGPUAvailable(): boolean {
+  return gpuModule !== null && gpuModule.isWebGPUInitialized()
+}
+
+/**
+ * Get WebGPU module for direct async operations
+ * Use this for large batch operations where GPU acceleration is beneficial
+ */
+export function getGPU(): any {
+  if (!gpuModule) {
+    throw new Error('WebGPU not loaded. Call loadGPUAcceleration() first.')
+  }
+  return gpuModule
 }
 
 /**
