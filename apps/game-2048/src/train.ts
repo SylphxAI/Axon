@@ -4,10 +4,6 @@
 
 import * as game from './game'
 import * as agent from './agent'
-import { loadAcceleration } from '../../../packages/tensor/src/index'
-
-// Load WASM acceleration for 2-2.7x speedup
-await loadAcceleration()
 
 console.log('🤖 Training DQN Agent for 2048\n')
 
