@@ -6,15 +6,19 @@
 /**
  * Matrix multiplication (optimized WASM version)
  * C = A @ B where A is [m, k] and B is [k, n]
+ * Pointers to Float32 arrays in linear memory
  */
 export function matmul(
-  a: Float32Array,
-  b: Float32Array,
-  c: Float32Array,
+  aPtr: usize,
+  bPtr: usize,
+  cPtr: usize,
   m: i32,
   k: i32,
   n: i32
 ): void {
+  const a = changetype<Float32Array>(aPtr)
+  const b = changetype<Float32Array>(bPtr)
+  const c = changetype<Float32Array>(cPtr)
   // Optimized matmul with loop tiling for cache efficiency
   const TILE_SIZE: i32 = 32
 
@@ -46,7 +50,10 @@ export function matmul(
 /**
  * Element-wise addition with loop unrolling
  */
-export function add(a: Float32Array, b: Float32Array, c: Float32Array, len: i32): void {
+export function add(aPtr: usize, bPtr: usize, cPtr: usize, len: i32): void {
+  const a = changetype<Float32Array>(aPtr)
+  const b = changetype<Float32Array>(bPtr)
+  const c = changetype<Float32Array>(cPtr)
   let i: i32 = 0
 
   // Unroll by 8 for SIMD-like performance
@@ -71,7 +78,10 @@ export function add(a: Float32Array, b: Float32Array, c: Float32Array, len: i32)
 /**
  * Element-wise multiplication with loop unrolling
  */
-export function mul(a: Float32Array, b: Float32Array, c: Float32Array, len: i32): void {
+export function mul(aPtr: usize, bPtr: usize, cPtr: usize, len: i32): void {
+  const a = changetype<Float32Array>(aPtr)
+  const b = changetype<Float32Array>(bPtr)
+  const c = changetype<Float32Array>(cPtr)
   let i: i32 = 0
 
   // Unroll by 8
@@ -95,7 +105,9 @@ export function mul(a: Float32Array, b: Float32Array, c: Float32Array, len: i32)
 /**
  * ReLU activation
  */
-export function relu(input: Float32Array, output: Float32Array, len: i32): void {
+export function relu(inputPtr: usize, outputPtr: usize, len: i32): void {
+  const input = changetype<Float32Array>(inputPtr)
+  const output = changetype<Float32Array>(outputPtr)
   for (let i: i32 = 0; i < len; i++) {
     output[i] = max(0, input[i])
   }
@@ -104,7 +116,9 @@ export function relu(input: Float32Array, output: Float32Array, len: i32): void 
 /**
  * Sigmoid activation (approximation for speed)
  */
-export function sigmoid(input: Float32Array, output: Float32Array, len: i32): void {
+export function sigmoid(inputPtr: usize, outputPtr: usize, len: i32): void {
+  const input = changetype<Float32Array>(inputPtr)
+  const output = changetype<Float32Array>(outputPtr)
   for (let i: i32 = 0; i < len; i++) {
     const x = input[i]
     // Fast sigmoid approximation: 0.5 + 0.5 * x / (1 + abs(x))
@@ -115,7 +129,9 @@ export function sigmoid(input: Float32Array, output: Float32Array, len: i32): vo
 /**
  * Tanh activation
  */
-export function tanh(input: Float32Array, output: Float32Array, len: i32): void {
+export function tanh(inputPtr: usize, outputPtr: usize, len: i32): void {
+  const input = changetype<Float32Array>(inputPtr)
+  const output = changetype<Float32Array>(outputPtr)
   for (let i: i32 = 0; i < len; i++) {
     const x = input[i]
     const e2x = exp(2 * x)
@@ -149,10 +165,10 @@ function abs(x: f32): f32 {
  */
 function exp(x: f32): f32 {
   // Fast exp approximation using Padé approximant
-  if (x > 10) return 22026.465794806718 // e^10
-  if (x < -10) return 0.000045399929762484854 // e^-10
+  if (x > 10) return <f32>22026.465794806718 // e^10
+  if (x < -10) return <f32>0.000045399929762484854 // e^-10
 
-  const a = 1.0 + x / 256.0
+  const a = <f32>(1.0 + x / 256.0)
   const a2 = a * a
   const a4 = a2 * a2
   const a8 = a4 * a4
