@@ -14,12 +14,19 @@
     "check": "biome check --write .",
     "typecheck": "bun run --filter='./packages/*' typecheck",
     "clean": "rm -rf packages/*/dist apps/*/dist node_modules/.cache",
-    "verify-docs": "bun run scripts/verify-docs.ts"
+    "verify-docs": "bun run scripts/verify-docs.ts",
+    "version": "bunx changeset version",
+    "release": "bunx changeset publish",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.29.7",
     "@types/bun": "latest",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitepress": "^1.6.4"
   },
   "engines": {
     "node": ">=18.0.0",
