@@ -5,7 +5,7 @@
 
 export type WebGPUDevice = {
   device: GPUDevice
-  queue: GPUCommandQueue
+  queue: GPUQueue
 }
 
 let gpuDevice: WebGPUDevice | null = null

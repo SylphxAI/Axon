@@ -22,6 +22,10 @@ export * as batchnorm from './batchnorm'
 export type { LSTMState, LSTMHidden } from './lstm'
 export * as lstm from './lstm'
 
+// GRU
+export type { GRUState, GRUHidden } from './gru'
+export * as gru from './gru'
+
 // Serialization
 export type {
   SerializedModel,
