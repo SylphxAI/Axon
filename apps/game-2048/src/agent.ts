@@ -135,7 +135,8 @@ export function selectAction(
 }
 
 /**
- * Train on a batch of experiences
+ * Train on a batch of experiences (batched version - uses WASM for large batches)
+ * Processes all experiences together for better performance
  */
 export function train(
   agent: AgentState,
@@ -144,64 +145,99 @@ export function train(
 ): AgentState {
   if (experiences.length === 0) return agent
 
-  let totalLoss = 0
+  const batchSize = experiences.length
 
-  // Process each experience
+  // Prepare batched states: [batchSize, stateSize]
+  const states: number[][] = []
+  const nextStates: number[][] = []
+  const actions: number[] = []
+  const rewards: number[] = []
+  const dones: boolean[] = []
+
   for (const exp of experiences) {
-    // Current Q-values
-    const qValues = forward(exp.state, agent.network)
-
-    // Target Q-value for the action taken
-    let targetQ: number
-    if (exp.done) {
-      targetQ = exp.reward
-    } else {
-      const nextQValues = forward(exp.nextState, agent.network)
-      const nextQArray = T.toArray(nextQValues)[0] as number[]
-      const maxNextQ = Math.max(...nextQArray)
-      targetQ = exp.reward + gamma * maxNextQ
-    }
-
-    // Create target tensor (same as qValues but with updated action)
-    const qArray = T.toArray(qValues)[0] as number[]
-    qArray[exp.action] = targetQ
-    const target = T.tensor([qArray], { requiresGrad: false })
-
-    // Compute loss
-    const loss = F.mse(qValues, target)
-    totalLoss += T.item(loss)
-
-    // Backward pass
-    const grads = T.backward(loss)
-
-    // Update network
-    const result = optim.adam.step(agent.optimizer, getNetworkParams(agent.network), grads)
-
-    // Rebuild network with new parameters
-    const newNetwork: QNetwork = {
-      linear1: {
-        weight: result.params[0]!,
-        bias: result.params[1]!,
-      },
-      linear2: {
-        weight: result.params[2]!,
-        bias: result.params[3]!,
-      },
-      linear3: {
-        weight: result.params[4]!,
-        bias: result.params[5]!,
-      },
-    }
-
-    // Update agent (this will be overwritten in loop, but that's fine for batch training)
-    agent = {
-      ...agent,
-      network: newNetwork,
-      optimizer: result.state,
-    }
+    states.push(exp.state)
+    nextStates.push(exp.nextState)
+    actions.push(exp.action)
+    rewards.push(exp.reward)
+    dones.push(exp.done)
   }
 
-  return agent
+  // Batched forward pass: [batchSize, 16] → [batchSize, 4]
+  // For batch size 32: [32, 16] @ [16, 64] → [32, 64] (2048 elements) - WASM activates!
+  const statesTensor = T.tensor(states, { requiresGrad: true })
+  const qValuesBatch = forwardBatch(statesTensor, agent.network)
+
+  // Compute target Q-values
+  const nextStatesTensor = T.tensor(nextStates, { requiresGrad: false })
+  const nextQValuesBatch = forwardBatch(nextStatesTensor, agent.network)
+  const nextQArray = T.toArray(nextQValuesBatch)
+
+  // Build target tensor
+  const qArray = T.toArray(qValuesBatch)
+  const targetArray: number[][] = []
+
+  for (let i = 0; i < batchSize; i++) {
+    const qValues = qArray[i]!
+    const targetQValues = [...qValues]
+
+    // Compute target for this experience
+    if (dones[i]) {
+      targetQValues[actions[i]!] = rewards[i]!
+    } else {
+      const nextQValues = nextQArray[i]!
+      const maxNextQ = Math.max(...nextQValues)
+      targetQValues[actions[i]!] = rewards[i]! + gamma * maxNextQ
+    }
+
+    targetArray.push(targetQValues)
+  }
+
+  const target = T.tensor(targetArray, { requiresGrad: false })
+
+  // Compute loss for entire batch
+  const loss = F.mse(qValuesBatch, target)
+
+  // Backward pass
+  const grads = T.backward(loss)
+
+  // Update network
+  const result = optim.adam.step(agent.optimizer, getNetworkParams(agent.network), grads)
+
+  // Rebuild network with new parameters
+  const newNetwork: QNetwork = {
+    linear1: {
+      weight: result.params[0]!,
+      bias: result.params[1]!,
+    },
+    linear2: {
+      weight: result.params[2]!,
+      bias: result.params[3]!,
+    },
+    linear3: {
+      weight: result.params[4]!,
+      bias: result.params[5]!,
+    },
+  }
+
+  return {
+    ...agent,
+    network: newNetwork,
+    optimizer: result.state,
+  }
+}
+
+/**
+ * Batched forward pass through network
+ * Input: [batchSize, inputSize]
+ * Output: [batchSize, outputSize]
+ */
+function forwardBatch(stateBatch: T.Tensor, network: QNetwork): T.Tensor {
+  let h = nn.linear.forward(stateBatch, network.linear1)
+  h = F.relu(h)
+  h = nn.linear.forward(h, network.linear2)
+  h = F.relu(h)
+  h = nn.linear.forward(h, network.linear3)
+  return h
 }
 
 /**
