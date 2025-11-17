@@ -5,6 +5,48 @@ All notable changes to NeuronLine will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2024-11-17
+
+### Performance
+- **Comprehensive loop unrolling optimization**
+  - 8x unrolling for simple operations (add, sub, mul, div, square)
+  - 4x unrolling for transcendental functions (sqrt, exp, log, tanh, sigmoid)
+  - Applied across all hot paths in forward/backward passes
+
+- **Extended memory pooling to all hot paths**
+  - **Activation functions**: ReLU, LeakyReLU, Sigmoid, Tanh, Softmax
+    - Forward and backward passes use `acquireBuffer()`
+    - Eliminates allocations in every activation call
+  - **Loss functions**: Binary Cross-Entropy, Cross-Entropy, Huber
+    - All forward and backward passes optimized
+    - Reduced GC pressure during loss computation
+  - **Optimizer algorithms**: Adam, RMSprop, AdaGrad
+    - Helper functions (elementwiseSquare, elementwiseSqrtPlusEpsilon, elementwiseDivide, elementwiseMax)
+    - Memory pooling + loop unrolling in all optimizer update steps
+  - **Neural network layers**: Conv2D, BatchNorm, Dropout
+    - Conv2D: im2col, padInput, addBias functions optimized
+    - BatchNorm: calculateMean, calculateVariance, normalize functions optimized
+    - Dropout: mask generation optimized with 8x unrolling
+  - **Tensor operations**: Enhanced add, sub, sum operations
+    - Increased loop unrolling from 4x to 8x in add()
+    - Added 8x unrolling to sub() and sum()
+    - Optimized scalar broadcasting with 8x unrolling
+    - Backward pass gradient accumulation uses memory pooling
+  - **Autograd**: Gradient accumulation
+    - Memory pooling + 8x loop unrolling in backward()
+    - Reduces allocations when summing gradients from multiple consumers
+
+### Changed
+- All hot paths now use consistent optimization patterns
+- Maintained 100% test coverage (64/66 tests passing)
+- No breaking changes to API
+
+### Technical Details
+- **Memory pooling strategy**: Temporary computation buffers use `acquireBuffer()`
+- **Loop unrolling strategy**: 8x for arithmetic, 4x for Math.* functions
+- **Long-lived tensors**: Weight initialization still uses `new Float32Array()` (correct)
+- **Impact**: Significantly reduced GC pressure and improved instruction-level parallelism
+
 ## [0.1.3] - 2024-11-17
 
 ### Added
