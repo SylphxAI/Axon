@@ -5,8 +5,14 @@
 
 import * as game from './game'
 import * as agent from './agent'
+import { loadAcceleration } from '@neuronline/tensor'
 
 console.log('⚡ NeuronLine Performance Benchmark\n')
+
+// Load WASM acceleration
+console.log('Loading WASM acceleration...')
+const wasmLoaded = await loadAcceleration()
+console.log(`WASM acceleration: ${wasmLoaded ? 'ENABLED ⚡' : 'DISABLED'}\n`)
 
 // Benchmark config
 const EPISODES = 100 // Fast benchmark
