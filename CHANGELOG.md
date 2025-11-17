@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Demo files**
   - `gpu-vs-wasm-bench.ts`: Comprehensive benchmark comparing WASM vs WebGPU
   - `webgpu-async-demo.ts`: Shows async GPU API usage patterns
+  - `profile-training.ts`: Training profiler for identifying hot paths
+
+- **Documentation**
+  - `PERFORMANCE_SUMMARY.md`: Comprehensive performance summary and analysis
+  - Documents all optimizations, benchmarks, and decision matrices
+  - Comparison with other libraries (TensorFlow.js, Brain.js)
 
 ### Performance
 - **BatchNorm optimization** (`@neuronline/nn`)
@@ -31,6 +37,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pre-computed row offsets for better memory access patterns
   - Pre-computed inverse of numSamples (replace division with multiplication)
   - Estimated 20-30% speedup for networks using BatchNorm
+
+- **Profile-guided optimization** (`apps/demo`)
+  - Created training profiler to identify hot paths
+  - Confirmed all major operations are optimized
+  - Training throughput: 29,819 examples/sec
+  - Backward: 54.12%, Forward: 30.03%, Optimizer: 13.69%
+  - All hot paths already have loop unrolling + memory pooling + WASM
 
 ### Changed
 - WebGPU package no longer depends on tensor (removes circular dependency)

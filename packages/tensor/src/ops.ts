@@ -48,7 +48,6 @@ export async function loadGPUAcceleration(): Promise<boolean> {
   if (gpuModule) return true
 
   try {
-    // @ts-expect-error - Optional dependency, may not be available
     const webgpu = await import('@neuronline/webgpu')
     await webgpu.initWebGPU()
     gpuModule = webgpu

@@ -13,7 +13,10 @@
     "@sylphx/neuronline-predictors": "workspace:*",
     "@neuronline/wasm": "workspace:*",
     "@neuronline/webgpu": "workspace:*",
-    "@neuronline/tensor": "workspace:*"
+    "@neuronline/tensor": "workspace:*",
+    "@neuronline/functional": "workspace:*",
+    "@neuronline/nn": "workspace:*",
+    "@neuronline/optim": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
